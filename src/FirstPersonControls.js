@@ -154,6 +154,16 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.update = function (delta) {
+		this.object.rotation.order = 'ZYX';
+		
+		var object = this.object;
+		
+		this.object = new THREE.Object3D();
+		this.object.position.copy(object.position);
+		this.object.rotation.copy(object.rotation);
+		this.object.updateMatrix();
+		this.object.updateMatrixWorld();
+	
 		var position = this.object.position;
 		
 		if(delta !== undefined){
@@ -181,12 +191,54 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		
 		position.add(pan);
 		
+		if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
+			var event = {
+				type: 'rotate',
+				thetaDelta: thetaDelta,
+				phiDelta: phiDelta
+			};
+			this.dispatchEvent(event);
+		}
+		
 		this.object.updateMatrix();
 		var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
 		var res = new THREE.Matrix4().multiplyMatrices(rot, this.object.matrix);
 		this.object.quaternion.setFromRotationMatrix(res);
 		
 		this.object.rotation.x += phiDelta;
+		this.object.updateMatrixWorld();
+		
+		// send transformation proposal to listeners
+		var proposeTransformEvent = {
+			type: "proposeTransform",
+			oldPosition: object.position,
+			newPosition: this.object.position,
+			objections: 0,
+			counterProposals: []
+		};
+		this.dispatchEvent(proposeTransformEvent);
+		
+		// check some counter proposals if transformation wasn't accepted
+		if(proposeTransformEvent.objections > 0 ){
+			if(proposeTransformEvent.counterProposals.length > 0){
+				var cp = proposeTransformEvent.counterProposals;
+				this.object.position.copy(cp[0]);
+				
+				proposeTransformEvent.objections = 0;
+				proposeTransformEvent.counterProposals = [];
+			}
+		}
+		
+		// apply transformation, if accepted
+		if(proposeTransformEvent.objections > 0){
+			
+		}else{
+			object.position.copy(this.object.position);
+		}
+		
+		object.rotation.copy(this.object.rotation);
+		
+		this.object = object;
 
 		thetaDelta = 0;
 		phiDelta = 0;
@@ -248,6 +300,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		} else if ( state === STATE.PAN ) {
 			panEnd.set( event.clientX, event.clientY );
 			panDelta.subVectors( panEnd, panStart );
+			//panDelta.multiplyScalar(this.moveSpeed).multiplyScalar(0.0001);
+			panDelta.multiplyScalar(0.0005).multiplyScalar(scope.moveSpeed);
 			
 			scope.pan( panDelta.x, panDelta.y );
 
@@ -270,14 +324,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		event.preventDefault();
 
-		var delta = 0;
-		if ( event.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
-			delta = event.wheelDelta;
-		} else if ( event.detail !== undefined ) { // Firefox
-			delta = - event.detail;
-		}
+		var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
+		scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
 
-		scope.moveSpeed += scope.moveSpeed * 0.001 * delta;
 		scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
 
 		scope.dispatchEvent( startEvent );

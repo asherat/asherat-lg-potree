@@ -1,21 +1,66 @@
 
-
+var nodesLoadTimes = {};
 
 Potree.PointCloudOctreeGeometry = function(){
 	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
 
+	this.url = null;
+	this.octreeDir = null;
+	this.spacing = 0;
+	this.boundingBox = null;
+	this.root = null;
 	this.numNodesLoading = 0;
+	this.nodes = null;
+	this.pointAttributes = null;
+	this.hierarchyStepSize = -1;
+	this.loader = null;
 }
 
 Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
+	this.id = Potree.PointCloudOctreeGeometryNode.IDCount++;
 	this.name = name;
 	this.index = parseInt(name.charAt(name.length-1));
 	this.pcoGeometry = pcoGeometry;
+	this.geometry = null;
 	this.boundingBox = boundingBox;
+	this.boundingSphere = boundingBox.getBoundingSphere();
 	this.children = {};
 	this.numPoints = 0;
 	this.level = null;
+}
+
+Potree.PointCloudOctreeGeometryNode.IDCount = 0;
+
+Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(){
+	var url = "";
 	
+	var version = this.pcoGeometry.loader.version;
+	
+	if(version.equalOrHigher("1.5")){
+		url = this.pcoGeometry.octreeDir + "/" + this.getHierarchyPath() + "/" + this.name;
+	}else if(version.equalOrHigher("1.4")){
+		url = this.pcoGeometry.octreeDir + "/" + this.name;
+	}else if(version.upTo("1.3")){
+		url = this.pcoGeometry.octreeDir + "/" + this.name;
+	}
+	
+	return url;
+}
+
+Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function(){
+	var path = "r/";
+
+	var hierarchyStepSize = this.pcoGeometry.hierarchyStepSize;
+	var indices = this.name.substr(1);
+	
+	var numParts = Math.floor(indices.length / hierarchyStepSize);
+	for(var i = 0; i < numParts; i++){
+		path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + "/";
+	}
+	
+	path = path.slice(0,-1);
+
+	return path;
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
@@ -28,72 +73,140 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 		return;
 	}
 	
-	if(Potree.PointCloudOctree.lru.numPoints + this.numPoints >= Potree.pointLoadLimit){
-		Potree.PointCloudOctree.disposeLeastRecentlyUsed(this.numPoints);
-	}
+	this.loading = true;
 	
+	//if(Potree.PointCloudOctree.lru.numPoints + this.numPoints >= Potree.pointLoadLimit){
+	//	Potree.PointCloudOctree.disposeLeastRecentlyUsed(this.numPoints);
+	//}
 	
 	this.pcoGeometry.numNodesLoading++;
-	this.loading = true;
-	var url = this.pcoGeometry.octreeDir + "/" + this.name;
-	var node = this;
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url, true);
-	xhr.responseType = 'arraybuffer';
-	xhr.overrideMimeType('text/plain; charset=x-user-defined');
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState === 4) {
-			if (xhr.status === 200 || xhr.status === 0) {
-				var buffer = xhr.response;
-				node.bufferLoaded(buffer);
-			} else {
-				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
-			}
+	
+	
+	if(this.pcoGeometry.loader.version.equalOrHigher("1.5")){
+		if((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren){
+			this.loadHierachyThenPoints();
+		}else{
+			this.loadPoints();
 		}
-	};
-	try{
-		xhr.send(null);
-	}catch(e){
-		console.log("fehler beim laden der punktwolke: " + e);
+	}else{
+		this.loadPoints();
 	}
+	
+	
 }
 
-Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
-	//console.log("loaded: " + this.name);
-	
-	var geometry = new THREE.BufferGeometry();
-	var numPoints = buffer.byteLength / 16;
-	
-	var positions = new Float32Array(numPoints*3);
-	var colors = new Float32Array(numPoints*3);
-	var color = new THREE.Color();
-	
-	var fView = new Float32Array(buffer);
-	var uiView = new Uint8Array(buffer);
-	
-	for(var i = 0; i < numPoints; i++){
-		positions[3*i] = fView[4*i];
-		positions[3*i+1] = fView[4*i+1];
-		positions[3*i+2] = fView[4*i+2];
+Potree.PointCloudOctreeGeometryNode.prototype.loadPoints = function(){
+	this.pcoGeometry.loader.load(this);
+};
+
+
+Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(){
+
+	var node = this;
+
+	// load hierarchy
+	var callback = function(node, hbuffer){
+		var count = hbuffer.byteLength / 5;
+		var view = new DataView(hbuffer);
 		
-		color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
-		colors[3*i] = color.r /255;
-		colors[3*i+1] = color.g / 255;
-		colors[3*i+2] = color.b / 255;
+		var stack = [];
+		var children = view.getUint8(0);
+		var numPoints = view.getUint32(1, true);
+		node.numPoints = numPoints;
+		stack.push({children: children, numPoints: numPoints, name: node.name});
+		
+		var decoded = [];
+		
+		var offset = 5;
+		while(stack.length > 0){
+		
+			var snode = stack.shift();
+			var mask = 1;
+			for(var i = 0; i < 8; i++){
+				if((snode.children & mask) !== 0){
+					var childIndex = i;
+					var childName = snode.name + i;
+					
+					var childChildren = view.getUint8(offset);
+					var childNumPoints = view.getUint32(offset + 1, true);
+					
+					stack.push({children: childChildren, numPoints: childNumPoints, name: childName});
+					
+					decoded.push({children: childChildren, numPoints: childNumPoints, name: childName});
+					
+					offset += 5;
+				}
+				
+				mask = mask * 2;
+			}
+			
+			if(offset === hbuffer.byteLength){
+				break;
+			}
+			
+		}
+		
+		//console.log(decoded);
+		
+		var nodes = {};
+		nodes[node.name] = node;
+		var pco = node.pcoGeometry;
+		
+		
+		for( var i = 0; i < decoded.length; i++){
+			var name = decoded[i].name;
+			var numPoints = decoded[i].numPoints;
+			var index = parseInt(name.charAt(name.length-1));
+			var parentName = name.substring(0, name.length-1);
+			var parentNode = nodes[parentName];
+			var level = name.length-1;
+			var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+			
+			var currentNode = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+			currentNode.level = level;
+			currentNode.numPoints = numPoints;
+			currentNode.hasChildren = decoded[i].children > 0;
+			parentNode.addChild(currentNode);
+			nodes[name] = currentNode;
+		}
+		
+		node.loadPoints();
+		
+	};
+	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
+		//var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
+		var hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
+		
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', hurl, true);
+		xhr.responseType = 'arraybuffer';
+		xhr.overrideMimeType('text/plain; charset=x-user-defined');
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200 || xhr.status === 0) {
+					var hbuffer = xhr.response;
+					callback(node, hbuffer);
+				} else {
+					console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
+				}
+			}
+		};
+		try{
+			xhr.send(null);
+		}catch(e){
+			console.log("fehler beim laden der punktwolke: " + e);
+		}
 	}
-	
-	geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
-	geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
-	geometry.boundingBox = this.boundingBox;
-	this.geometry = geometry;
-	this.loaded = true;
-	this.loading = false;
-	this.pcoGeometry.numNodesLoading--;
-}
+
+};
+
+
 
 Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
-	delete this.geometry;
-	this.loaded = false;
-	
-	//console.log("dispose: " + this.name);
+	if(this.geometry){
+		this.geometry.dispose();
+		this.geometry = null;
+		this.loaded = false;
+	}
 }
+

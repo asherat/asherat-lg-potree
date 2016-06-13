@@ -3,7 +3,6 @@ var THREELG = { viewsync: undefined, justInitialized: false };
 
 VIEWSYNC.Connection = function(appname, master, url) {
   var viewsync = io.connect(typeof url === 'undefined' ? '/viewsync' : url);
-
   function sendInitialization() {
     console.log('Sending initialization to slave');
     THREELG.justInitialized = true;
@@ -47,12 +46,9 @@ VIEWSYNC.Connection = function(appname, master, url) {
                 }
                 break;
             case 'render':
-			
                 // pov.prerenderArgs comes from the prerenderMaster function
-                if (THREELG.prerenderSlave !== undefined) { 
-					a = THREELG.prerenderSlave(pov.prerenderArgs, THREELG.initialSceneStuff); 
-				}
-				THREELG.render(THREELG.initialSceneStuff, a);
+                if (THREELG.prerenderSlave !== undefined) { a = THREELG.prerenderSlave(pov.prerenderArgs, THREELG.initialSceneStuff); }
+                THREELG.render(THREELG.initialSceneStuff, a);
                 break;
         }
     }
@@ -104,7 +100,8 @@ THREE.lg_init = function(appname, prerenderMaster, prerenderSlave, initialScene,
                 if (THREELG.master) {
                     if (THREELG.prerenderMaster !== undefined) {
 						a = THREELG.prerenderMaster(); 
-						}
+					}
+					
                     if (a.skipSlaveRender === undefined) {
                         THREELG.justInitialized = false;
                         THREELG.viewsync.sendPov({ 'type': 'render', 'prerenderArgs': a });
