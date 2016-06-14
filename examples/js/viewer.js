@@ -134,7 +134,7 @@ var preRenderMaster = function () {
 
 
 var preRenderSlave = function (a) {
-	var displayOffset;
+	var yawOffset;
 	
 	
 	var oParametre = {};
@@ -145,16 +145,15 @@ var preRenderSlave = function (a) {
 		oParametre[unescape(aItKey[0])] = aItKey.length > 1 ? unescape(aItKey[1]) : "";
 	  }
 	}
-	if(oParametre.offset)
-		displayOffset = oParametre.offset;
+	if(oParametre.yawOffset)
+		yawOffset = oParametre.yawOffset;
 	else
-		displayOffset = 1;
+		yawOffset = 1;
 
-	//console.debug("ASDASD" + displayOffset)
 	//console.log(JSON.stringify(a));
 	camera.position.copy(a.position);
 	camera.rotation.copy(a.rotation)
-	camera.rotation.y += displayOffset*rotationAngle * Math.PI / 180;
+	camera.rotateOnAxis((new THREE.Vector3(0, -1, 0)), yawOffset*rotationAngle*Math.PI/180);
 
 	scene.children.forEach(function(c) { c.LOD = a.LOD; });
 	scene.children[0].material.size = a.pointsize;

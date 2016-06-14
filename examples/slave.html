@@ -7,7 +7,7 @@
 <body>
 
 	<script src="../libs/three.js/build/three.js"></script>
-	<script src="http://localhost:8086/socket.io/socket.io.js"></script>
+	<script src="http://lg1:8086/socket.io/socket.io.js"></script>
 	<script src="../libs/lg-three.js"></script>
 	
 	<script src="../libs/other/stats.min.js"></script>
@@ -33,15 +33,15 @@
 	
 	<script>
 	
-		var rotationAngle = 8;
+		var rotationAngle = 15;
 		var sceneProperties = {
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
 			quality: 		"Interpolation", 	// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov: 			20, 				// field of view in degree
-			flipYZ:			false,
+			fov: 			22, 				// field of view in degree
+			flipYZ:			true,
 			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
 			pointLimit: 	1,					// max number of points in millions
 			pointSize: 		1.2,	
