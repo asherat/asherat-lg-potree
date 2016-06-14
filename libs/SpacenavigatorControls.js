@@ -31,7 +31,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	
 	// Set to false to disable this control
 	this.enabled = true;
-
 	this.rotateSpeed = 1.0;
 	this._rotateSpeed = 0.3;
 	this.moveSpeed = 10.0;
@@ -66,8 +65,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	var offset = new THREE.Vector3();
 
-	var phiDelta = 0;
-	var thetaDelta = 0;
+	//var phiDelta = 0;
+	//var thetaDelta = 0;
 	var scale = 1;
 	var pan = new THREE.Vector3();
 
@@ -88,15 +87,24 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	var endEvent = { type: 'end'};
 
 	this.rotateLeft = function ( angle ) {
-		thetaDelta -= angle;
+		//thetaDelta -= angle;
+		this.object.updateMatrix();
+		this.object.rotateOnAxis((new THREE.Vector3(0, 1, 0)), -angle);
+		this.object.updateMatrixWorld();
 	};
 
 	this.rotateUp = function ( angle ) {
-		phiDelta -= angle;
+		//phiDelta -= angle;
+		this.object.updateMatrix();
+		this.object.rotateOnAxis((new THREE.Vector3(1, 0, 0)), -angle);
+		this.object.updateMatrixWorld();
 	};
 
 	this.rollLeft = function ( anglespeed ) {
-		this.object.rotation.z += anglespeed;
+		this.object.updateMatrix();
+		this.object.rotateOnAxis((new THREE.Vector3(0, 0, 1)), anglespeed);
+		this.object.updateMatrixWorld();
+
 	}
 	
 
@@ -224,7 +232,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		
 		position.add(pan);
 		
-		if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
+		/*if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
 			var event = {
 				type: 'rotate',
 				thetaDelta: thetaDelta,
@@ -232,13 +240,13 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			};
 			this.dispatchEvent(event);
 		}
-		
+		*/
 		this.object.updateMatrix();
-		var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
+		/*var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
 		var res = new THREE.Matrix4().multiplyMatrices(rot, this.object.matrix);
 		this.object.quaternion.setFromRotationMatrix(res);
 		
-		this.object.rotation.x += phiDelta;
+		this.object.rotation.x += phiDelta;*/
 		this.object.updateMatrixWorld();
 		
 		// send transformation proposal to listeners
@@ -273,8 +281,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		
 		this.object = object;
 
-		thetaDelta = 0;
-		phiDelta = 0;
+		//thetaDelta = 0;
+		//phiDelta = 0;
 		scale = 1;
 		pan.set( 0, 0, 0 );
 
@@ -375,39 +383,39 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		if ( scope.enabled === false) return;
 		
 		switch ( event.keyCode ) {
-			case scope.keys.UP: scope.moveForward = true; break;
+			case scope.keys.UP: 	scope.moveForward = true; break;
 			case scope.keys.BOTTOM: scope.moveBackward = true; break;
-			case scope.keys.LEFT: scope.moveLeft = true; break;
-			case scope.keys.RIGHT: scope.moveRight = true; break;
-			case scope.keys.W: scope.moveForward = true; break;
-			case scope.keys.S: scope.moveBackward = true; break;
-			case scope.keys.A: scope.moveLeft = true; break;
-			case scope.keys.D: scope.moveRight = true; break;			
-			case scope.keys.R: scope.moveUp = true; break;	
-			case scope.keys.F: scope.moveDown = true; break;	
-			case scope.keys.Z: scope.isRollLeft = true; break;	
-			case scope.keys.C: scope.isRollRight = true; break;	
-			case scope.keys.Q: scope.isTurnLeft = true; break;	
-			case scope.keys.E: scope.isTurnRight = true; break;
+			case scope.keys.LEFT: 	scope.moveLeft = true; break;
+			case scope.keys.RIGHT: 	scope.moveRight = true; break;
+			case scope.keys.W: 	scope.moveForward = true; break;
+			case scope.keys.S:	scope.moveBackward = true; break;
+			case scope.keys.A:	scope.moveLeft = true; break;
+			case scope.keys.D:	scope.moveRight = true; break;			
+			case scope.keys.R: 	scope.moveUp = true; break;	
+			case scope.keys.F: 	scope.moveDown = true; break;	
+			case scope.keys.Z: 	scope.isRollLeft = true; break;	
+			case scope.keys.C: 	scope.isRollRight = true; break;	
+			case scope.keys.Q: 	scope.isTurnLeft = true; break;	
+			case scope.keys.E: 	scope.isTurnRight = true; break;
 		}
 	}
 	
 	function onKeyUp( event ) {
 		switch ( event.keyCode ) {
-			case scope.keys.W: scope.moveForward = false; break;
-			case scope.keys.S: scope.moveBackward = false; break;
-			case scope.keys.A: scope.moveLeft = false; break;
-			case scope.keys.D: scope.moveRight = false; break;
-			case scope.keys.UP: scope.moveForward = false; break;
+			case scope.keys.W: 	scope.moveForward = false; break;
+			case scope.keys.S: 	scope.moveBackward = false; break;
+			case scope.keys.A: 	scope.moveLeft = false; break;
+			case scope.keys.D: 	scope.moveRight = false; break;
+			case scope.keys.UP: 	scope.moveForward = false; break;
 			case scope.keys.BOTTOM: scope.moveBackward = false; break;
-			case scope.keys.LEFT: scope.moveLeft = false; break;
-			case scope.keys.RIGHT: scope.moveRight = false; break;
-			case scope.keys.R: scope.moveUp = false; break;	
-			case scope.keys.F: scope.moveDown = false; break;	
-			case scope.keys.Z: scope.isRollLeft = false; break;	
-			case scope.keys.C: scope.isRollRight = false; break;	
-			case scope.keys.Q: scope.isTurnLeft = false; break;	
-			case scope.keys.E: scope.isTurnRight = false; break;
+			case scope.keys.LEFT: 	scope.moveLeft = false; break;
+			case scope.keys.RIGHT: 	scope.moveRight = false; break;
+			case scope.keys.R: 	scope.moveUp = false; break;	
+			case scope.keys.F: 	scope.moveDown = false; break;	
+			case scope.keys.Z: 	scope.isRollLeft = false; break;	
+			case scope.keys.C: 	scope.isRollRight = false; break;	
+			case scope.keys.Q: 	scope.isTurnLeft = false; break;	
+			case scope.keys.E: 	scope.isTurnRight = false; break;
 		}
 	}
 
