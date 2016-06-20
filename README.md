@@ -1,4 +1,4 @@
-# LG-Potree
+LG-Potree
 ===============
 Point Cloud Visualization based in Potree () and adapted to Liquid Galaxy with LG-Three.js
 
