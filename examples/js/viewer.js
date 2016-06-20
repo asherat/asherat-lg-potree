@@ -26,6 +26,7 @@ var firstFlipYZ = sceneProperties.flipYZ;
 var showStats = false;
 var showBoundingBox = false;
 var freeze = false;
+var sponsors = true;
 
 var controls;
 var snControls;
@@ -110,7 +111,7 @@ var preRenderMaster = function () {
 
 	if ( changeArgs.position !== null && ( THREELG.justInitialized || guiChanged ||
 				(lastChangeArgs.position != null &&	Math.abs(changeArgs.position.distanceTo(lastChangeArgs.position)) > 1e-10)
-				 ||(lastChangeArgs.rotation   != null && changeArgs.rotation != lastChangeArgs.rotation)
+				||(lastChangeArgs.rotation   != null && changeArgs.rotation != lastChangeArgs.rotation)
 				)) {
 		delete changeArgs.skipSlaveRender;
 		guiChanged = false;
@@ -140,15 +141,15 @@ var preRenderSlave = function (a) {
 	var oParametre = {};
 
 	if (window.location.search.length > 1) {
-	  for (var aItKey, nKeyId = 0, aCouples = window.location.search.substr(1).split("&"); nKeyId < aCouples.length; nKeyId++) {
-		aItKey = aCouples[nKeyId].split("=");
-		oParametre[unescape(aItKey[0])] = aItKey.length > 1 ? unescape(aItKey[1]) : "";
-	  }
+		for (var aItKey, nKeyId = 0, aCouples = window.location.search.substr(1).split("&"); nKeyId < aCouples.length; nKeyId++) {
+			aItKey = aCouples[nKeyId].split("=");
+			oParametre[unescape(aItKey[0])] = aItKey.length > 1 ? unescape(aItKey[1]) : "";
+		}
 	}
 	if(oParametre.yawOffset)
-		yawOffset = oParametre.yawOffset;
+	yawOffset = oParametre.yawOffset;
 	else
-		yawOffset = 1;
+	yawOffset = 1;
 
 	//console.log(JSON.stringify(a));
 	camera.position.copy(a.position);
@@ -175,7 +176,7 @@ function initGUI(){
 	
 	params = {
 		"points(m)": pointCountTarget,
-		PointSize: pointSize,
+PointSize: pointSize,
 		"FOV": sceneProperties.fov,
 		"opacity": opacity,
 		"SizeType" : sceneProperties.sizeType,
@@ -189,7 +190,8 @@ function initGUI(){
 		"BoundingBox": showBoundingBox,
 		"DEM Collisions": useDEMCollisions,
 		"MinNodeSize": minNodeSize,
-		"freeze": freeze
+		"freeze": freeze,
+		"sponsors": sponsors
 	};
 	
 	var pPoints = gui.add(params, 'points(m)', 0, 4);
@@ -219,6 +221,8 @@ function initGUI(){
 		setPointSizeType(value);
 	});
 	
+
+
 	
 	var options = [];
 	var attributes = pointcloud.pcoGeometry.pointAttributes;
@@ -286,6 +290,10 @@ function initGUI(){
 		showSkybox = value;
 	});
 	
+	var pSponsors = fAppearance.add(params, 'sponsors');
+	pSponsors.onChange(function(value){
+		sponsors = value;
+	});
 	var fSettings = gui.addFolder('Settings');
 	
 	var pClipMode = fSettings.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
@@ -363,16 +371,14 @@ var initThree = function (){
 	renderer.setSize(width, height);
 	renderer.autoClear = false;
 
-	//console.debug(elRenderArea.firstChild)
-	//console.debug(elRenderArea)
 	
 	if(elRenderArea.firstChild){
 		elRenderArea.replaceChild(renderer.domElement, elRenderArea.firstChild);
 		if(firstFlipYZ)
-				flipYZ();
+		flipYZ();
 	}
 	else
-		elRenderArea.appendChild(renderer.domElement);
+	elRenderArea.appendChild(renderer.domElement);
 	
 	skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
@@ -419,7 +425,7 @@ var initThree = function (){
 			}
 
 			if(firstFlipYZ)
-				flipYZ();
+			flipYZ();
 			camera.zoomTo(pointcloud, 1);
 			
 			initGUI();	
@@ -444,7 +450,7 @@ var initThree = function (){
 			referenceFrame.add(pointcloud);
 			
 			if(firstFlipYZ)
-				flipYZ();
+			flipYZ();
 			
 			referenceFrame.updateMatrixWorld(true);
 			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
@@ -459,7 +465,7 @@ var initThree = function (){
 			
 			pointcloud.material.interpolation = false;
 			pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-		
+			
 			if(sceneProperties.cameraPosition != null){
 				var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
 				camera.position.copy(cp);
@@ -482,10 +488,10 @@ var initThree = function (){
 	texture.minFilter = texture.magFilter = THREE.LinearFilter;
 	
 	var bg = new THREE.Mesh(
-		new THREE.PlaneBufferGeometry(2, 2, 0),
-		new THREE.MeshBasicMaterial({
-			map: texture
-		})
+	new THREE.PlaneBufferGeometry(2, 2, 0),
+	new THREE.MeshBasicMaterial({
+map: texture
+	})
 	);
 	
 	bg.material.depthTest = false;
@@ -512,19 +518,19 @@ function flipYZ(){
 	if(isFlipYZ){
 		referenceFrame.matrix.copy(new THREE.Matrix4());
 		referenceFrame.applyMatrix(new THREE.Matrix4().set(
-			1,0,0,0,
-			0,0,1,0,
-			0,-1,0,0,
-			0,0,0,1
+		1,0,0,0,
+		0,0,1,0,
+		0,-1,0,0,
+		0,0,0,1
 		));
 		
 	}else{
 		referenceFrame.matrix.copy(new THREE.Matrix4());
 		referenceFrame.applyMatrix(new THREE.Matrix4().set(
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,0,0,1
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		0,0,0,1
 		));
 	}
 	
@@ -643,16 +649,16 @@ var HighQualityRenderer = function(){
 		if(depthMaterial != null){
 			return;
 		}
-	
+		
 		depthMaterial = new Potree.PointCloudMaterial();
 		attributeMaterial = new Potree.PointCloudMaterial();
-	
+		
 		depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
 		depthMaterial.pointShape = Potree.PointShape.CIRCLE;
 		depthMaterial.interpolate = false;
 		depthMaterial.weighted = false;
 		depthMaterial.minSize = 2;
-					
+		
 		attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
 		attributeMaterial.interpolate = false;
 		attributeMaterial.weighted = true;
@@ -702,10 +708,10 @@ var HighQualityRenderer = function(){
 
 	// render with splats
 	this.render = function(renderer){
-	
+		
 		var width = elRenderArea.clientWidth;
 		var height = elRenderArea.clientHeight;
-	
+		
 		initHQSPlats();
 		
 		resize(width, height);
@@ -721,10 +727,10 @@ var HighQualityRenderer = function(){
 		renderer.render(scene, camera);
 		
 		if(pointcloud){
-		
+			
 			depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 			attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
-		
+			
 			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 			var originalMaterial = pointcloud.material;
 			
@@ -787,7 +793,7 @@ var HighQualityRenderer = function(){
 			}
 			
 			pointcloud.material = originalMaterial;
-		    
+			
 			renderer.clearDepth();
 
 		}
@@ -816,7 +822,7 @@ var EDLRenderer = function(){
 		
 		edlMaterial = new Potree.EyeDomeLightingMaterial();
 		attributeMaterial = new Potree.PointCloudMaterial();
-					
+		
 		attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
 		attributeMaterial.interpolate = false;
 		attributeMaterial.weighted = false;
@@ -851,7 +857,7 @@ var EDLRenderer = function(){
 		var aspect = width / height;
 		
 		var needsResize = (rtColor.width != width || rtColor.height != height);
-	
+		
 		// disposal will be unnecessary once this fix made it into three.js master: 
 		// https://github.com/mrdoob/three.js/pull/6355
 		if(needsResize){
@@ -867,7 +873,7 @@ var EDLRenderer = function(){
 	}
 
 	this.render = function(){
-	
+		
 		initEDL();
 		
 		resize();
@@ -884,9 +890,9 @@ var EDLRenderer = function(){
 		if(pointcloud){
 			var width = elRenderArea.clientWidth;
 			var height = elRenderArea.clientHeight;
-		
+			
 			var octreeSize = pointcloud.pcoGeometry.boundingBox.size().x;
-		
+			
 			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 			var originalMaterial = pointcloud.material;
 			
@@ -926,7 +932,7 @@ var EDLRenderer = function(){
 				edlMaterial.uniforms.expScale.value = camera.far;
 				
 				//edlMaterial.uniforms.depthMap.value = depthTexture;
-			
+				
 				Potree.utils.screenPass.render(renderer, edlMaterial);
 			}	
 			
@@ -944,7 +950,7 @@ var EDLRenderer = function(){
 };
 
 render = function (initialScene) {
-		if (undefined !== render) {
+	if (undefined !== render) {
 		requestAnimationFrame(this.render.bind(this));
 	}
 	
@@ -957,7 +963,7 @@ render = function (initialScene) {
 	if(pointcloud){
 		
 		var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
-			
+		
 		if(!this.intensityMax){
 			var root = pointcloud.pcoGeometry.root;
 			if(root != null && root.loaded){
@@ -984,7 +990,7 @@ render = function (initialScene) {
 			this.heightMin = bbWorld.min.y;
 			this.heightMax = bbWorld.max.y;
 		}
-			
+		
 		pointcloud.material.clipMode = clipMode;
 		pointcloud.material.heightMin = this.heightMin;
 		pointcloud.material.heightMax = this.heightMax;
@@ -1001,20 +1007,25 @@ render = function (initialScene) {
 	
 	if(stats && showStats){
 		document.getElementById("lblNumVisibleNodes").style.display = "";
-	    document.getElementById("lblNumVisiblePoints").style.display = "";
-	    stats.domElement.style.display = "";
-	
+		document.getElementById("lblNumVisiblePoints").style.display = "";
+		stats.domElement.style.display = "";
+		
 		stats.update();
-	
+		
 		if(pointcloud){
 			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
 			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
 		}
 	}else if(stats){
 		document.getElementById("lblNumVisibleNodes").style.display = "none";
-	    document.getElementById("lblNumVisiblePoints").style.display = "none";
-	    stats.domElement.style.display = "none";
+		document.getElementById("lblNumVisiblePoints").style.display = "none";
+		stats.domElement.style.display = "none";
 	}
+	
+	if(sponsors)
+	document.getElementById("sponsors").style.display = "inline";
+	else
+	document.getElementById("sponsors").style.display = "none";
 	
 	camera.fov = fov;
 	
