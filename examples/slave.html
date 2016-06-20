@@ -7,7 +7,7 @@
 <body>
 
 	<script src="../libs/three.js/build/three.js"></script>
-	<script src="http://lg1:8086/socket.io/socket.io.js"></script>
+	<script src="../libs/socket.io/socket.io.min.js"></script>
 	<script src="../libs/lg-three.js"></script>
 	
 	<script src="../libs/other/stats.min.js"></script>
@@ -23,16 +23,12 @@
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
-	
-	
-	
-	
-	
+
 	
 	<div id="renderArea"></div>
-	
+	<div id="sponsors"></div>
 	<script>
-	
+		var sponsors;
 		var rotationAngle = 15;
 		var sceneProperties = {
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",

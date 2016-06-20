@@ -14,119 +14,99 @@
 ** limitations under the License.
 */
 
-// straight outta input.h
-// http://lxr.free-electrons.com/source/include/linux/input.h?v=3.2
+define(
+['config', 'bigl', 'stapes', 'socketio'],
+function(config, L, Stapes, io) {
 
-var EV_KEY = 1;
-var EV_REL = 2;
-var EV_ABS = 3;
+	var NAV_SENSITIVITY = 0.0032;
+	var NAV_GUTTER_VALUE = 8;
+	var MOVEMENT_THRESHOLD = 1.0;
 
-var BTN_0 = 0x100;
-var BTN_1 = 0x101;
-var ABS_X = 0;
-var ABS_Y = 1;
-var ABS_Z = 2;
-var ABS_RX = 3;
-var ABS_RY = 4;
-var ABS_RZ = 5;
-var NAV_GUTTER = 20;
+	var MultiAxisModule = Stapes.subclass({
+constructor: function() {
+			this.push_count = 0;
+			this.moving = false;
+		},
 
-var buttonTimer = 0; // Alf
+init: function() {
+			var self = this;
 
-var relay = function( io, port, hyperlapse_delay ) {
+			console.debug('MultiAxis: initializing');
 
-  var multiaxis = io
-      .of('/multiaxis')
+			this.socket = io.connect('/multiaxis');
 
-  var navstate = function MultiAxisState() {
-    var abs = [0,0,0,0,0,0];
-    var updates = 0;
+			this.socket.once('connect',function() {
+				console.debug('MultiAxis: loaded');
+				self.emit( 'ready' );
+			});
+			
+			this.socket.on('connection', function (client) {
+				console.debug('MultiAxis: connected')
+				self.emit( 'ready' );
+			})
+			this.socket.on('button',function(state) {
+				if (Number(state) == 0x101) self.moveForward(); 
+				if (Number(state) == 0x100) self.moveBackward(); 
+			});
 
-    function LogState() {
-      console.log(
-        'abs state:'
-      + ' ABS_X: ' + abs[ABS_X]
-      + ' ABS_Y: ' + abs[ABS_Y]
-      + ' ABS_Z: ' + abs[ABS_Z]
-      + ' ABS_RX: ' + abs[ABS_RX]
-      + ' ABS_RY: ' + abs[ABS_RY]
-      + ' ABS_RZ: ' + abs[ABS_RZ]
-      );
-    }
+			this.socket.on('state',function(data) {
+				console.log('multiaxis abs:', data.abs);
+				var xMov = 0;
+				var yMov = 0;
+				var zMov = 0;
+				var xRot = 0;
+				var yRot = 0;
+				var zRot = 0;
+				var value;
+				var dirty = false;
+				for( var axis in data.abs ) {
+					value = data.abs[axis];
+					switch(axis) {
+					case '0': // X
+						xMov = value * NAV_SENSITIVITY;
+						dirty = true;
+						break;
+					case '1': // Y
+						yMov = value * NAV_SENSITIVITY;
+						dirty = true;
+						break;
+					case '2': // Z
+						zMov = value * NAV_SENSITIVITY;
+						dirty = true;
+						break;
+					case '3': // RX
+						xRot = value * NAV_SENSITIVITY;
+						dirty = true;
+						break;
+					case '4': // RY
+						yRot = value * NAV_SENSITIVITY;
+						dirty = true;
+						break;
+					case '5': // RZ
+						zRot = value * NAV_SENSITIVITY;
+						dirty = true;
+						break;
+					}
+				}
+				if (dirty) {
+					self.emit('abs', {X: xMov, Y: yMov, Z: zMov, RX: xRot, RY: yRot, RZ: zRot});
 
-    function InputEvent( buf ) {
-//return buf;
-      var device = buf.toString( 'utf8', 16 );
-      var type = buf.readUInt16LE( 8 );
-      var code = buf.readUInt16LE( 10 );
-      var value = buf.readInt32LE( 12 );
-      if( device == 'spacenavigator' ) {
-        switch( type ) {
-          case EV_REL: // sometimes ABS events are sent as REL
-          case EV_ABS:
-            abs[code] = value;
-            updates += 1;
-            //LogState();
-            break;
-          case EV_KEY:
-// buttonEvent( value ); -- send button on press, rather than press state. Start Alf
-		if (value == 0) { // 0 is button released
-		  clearInterval( buttonTimer );
-		} else if (value == 1) { // 1 is pressed
-                  buttonEvent( code ); // send id of the pressed button
-		  clearInterval( buttonTimer ); // clear any existing buttonTimer intervals
-		  buttonTimer = setInterval(function(){ buttonEvent( code ) }, hyperlapse_delay );
-                } // End Alf
+				}
+			});
 
-            break;
-        }
-      }
-      return { device: device, type: type, code: code, value: value };
-    }
+			this.socket.on('connect_failed',function() {
+				L.error('MultiAxis: connect failed!');
+			});
+			this.socket.on('disconnect',function() {
+				L.error('MultiAxis: disconnected');
+			});
+			this.socket.on('reconnect',function() {
+				console.debug('MultiAxis: reconnected');
+			});
+		},
 
-    function FlushState() {
-      var flushed = updates;
-      updates = 0;
-      return {
-        updates: flushed,
-        abs: abs
-      }
-    }
 
-    // public access
-    return {
-      InputEvent: InputEvent,
-      FlushState: FlushState
-    };
-  }();
+	});
 
-  var axisevents = require('dgram').createSocket("udp4");
-
-  function buttonEvent(value) {
-    io.of('/multiaxis').emit( 'button', value );
-  }
-
-  //function sendButtonEvent( code ) {
-  //          buttonEvent( code ); // send id of the pressed button
-  //}
-
-  axisevents.on('message', function (buf, rinfo) {
-    var ev = navstate.InputEvent( buf );
-    console.log( ev );
-  });
-
-  var axissync = setInterval( function () {
-    var state = navstate.FlushState();
-    if (state.updates > 0) {
-      io.of('/multiaxis').emit( 'state', state );
-    }
-  }, 17);
-
-  axisevents.bind(port);
-
-  return multiaxis;
-};
-
-exports.relay = relay;
-
-//vim:set noai
+	return MultiAxisModule;
+});

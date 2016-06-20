@@ -7,7 +7,7 @@
 <body>
 
 	<script src="../libs/three.js/build/three.js"></script>
-	<script src="http://lg1:8086/socket.io/socket.io.js"></script>
+	<script src="../libs/socket.io/socket.io.min.js"></script>
 	<script src="../libs/lg-three.js"></script>
 	
 	<script src="../libs/other/stats.min.js"></script>
@@ -16,8 +16,10 @@
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
-	<script src="../libs/SpacenavigatorControls.js"></script>
 	
+	<script src="/js/lib/require/require.min.js"></script>
+	<script src="../libs/SpacenavigatorControls.js"></script>
+
 	
 	<!-- INFOS / STATS -->
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
@@ -27,6 +29,15 @@
 	<!-- TOOLS -->
 	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
 		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
+	</div>
+	
+		<!-- SPONSORS -->
+	<div id="sponsors">
+		<img src="../resources/images/logo-liquidgalaxylab.png"/>
+		<img src="../resources/images/lleidadrone lab logo.png"/>
+		<img src="../resources/images/hemav-academics.png"/>
+		<img src="../resources/images/CataloniaSmartDroneS.png"/>
+		<img src="../resources/images/pcital logo.jpg"/>
 	</div>
 	
 	<div id="renderArea"></div>

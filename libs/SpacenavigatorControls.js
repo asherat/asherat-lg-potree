@@ -1,27 +1,45 @@
 
 
 /**
- * @author mschuetz / http://mschuetz.at
- *
- * adapted from THREE.OrbitControls by 
- *
- * @author qiao / https://github.com/qiao
- * @author mrdoob / http://mrdoob.com
- * @author alteredq / http://alteredqualia.com/
- * @author WestLangley / http://github.com/WestLangley
- * @author erich666 / http://erichaines.com
- *
- * This set of controls performs first person navigation without mouse lock.
- * Instead, rotating the camera is done by dragging with the left mouse button.
- *
- * move: a/s/d/w or up/down/left/right
- * rotate: left mouse
- * pan: right mouse
- * change speed: mouse wheel
- *
- *
- */
+* @author mschuetz / http://mschuetz.at
+*
+* adapted from THREE.OrbitControls by 
+*
+* @author qiao / https://github.com/qiao
+* @author mrdoob / http://mrdoob.com
+* @author alteredq / http://alteredqualia.com/
+* @author WestLangley / http://github.com/WestLangley
+* @author erich666 / http://erichaines.com
+*
+* This set of controls performs first person navigation without mouse lock.
+* Instead, rotating the camera is done by dragging with the left mouse button.
+*
+* move: a/s/d/w or up/down/left/right
+* rotate: left mouse
+* pan: right mouse
+* change speed: mouse wheel
+*
+*
+*/
 
+
+requirejs.config({
+	paths: {
+		// *** RequireJS Plugins
+		'async': '/js/lib/require/async',
+		// *** Dynamic Global Configuration
+		'config': '/js/config',
+		// *** Common Deps
+		'bigl': '/js/bigl',
+		'stapes': '/js/lib/stapes/stapes.min',
+		'doT': '/js/lib/doT/doT.min',
+		'socketio': '/socket.io/socket.io',
+	},
+	shim: {
+		'config': { exports: 'config' },
+	},
+
+});
 
 
 THREE.FirstPersonControls = function ( object, domElement ) {
@@ -34,6 +52,22 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.rotateSpeed = 1.0;
 	this._rotateSpeed = 0.3;
 	this.moveSpeed = 10.0;
+
+
+	require(['../libs/multiaxis'],
+	function(MultiAxisModule) 
+	{   
+
+		// *** create and link the MultiAxis module
+		var multiaxis = new MultiAxisModule();
+		multiaxis.on('ready', function(){
+
+		});
+		multiaxis.on('abs', function(){
+			console.debug("ASDASD")
+		});
+		multiaxis.init();
+	});
 
 	this.keys = { 
 		LEFT: 37, 
@@ -186,7 +220,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		this.object.rotation.copy(object.rotation);
 		this.object.updateMatrix();
 		this.object.updateMatrixWorld();
-	
+		
 		var position = this.object.position;
 		
 		if(delta !== undefined){
@@ -348,7 +382,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			panEnd.set( event.clientX, event.clientY );
 			panDelta.subVectors( panEnd, panStart );
 			panDelta.multiplyScalar(-scope.moveSpeed);
-		
+			
 			scope.pan( panDelta.x, panDelta.y );
 
 			panStart.copy( panEnd );
@@ -383,40 +417,44 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		if ( scope.enabled === false) return;
 		
 		switch ( event.keyCode ) {
-			case scope.keys.UP: 	scope.moveForward = true; break;
-			case scope.keys.BOTTOM: scope.moveBackward = true; break;
-			case scope.keys.LEFT: 	scope.moveLeft = true; break;
-			case scope.keys.RIGHT: 	scope.moveRight = true; break;
-			case scope.keys.W: 	scope.moveForward = true; break;
-			case scope.keys.S:	scope.moveBackward = true; break;
-			case scope.keys.A:	scope.moveLeft = true; break;
-			case scope.keys.D:	scope.moveRight = true; break;			
-			case scope.keys.R: 	scope.moveUp = true; break;	
-			case scope.keys.F: 	scope.moveDown = true; break;	
-			case scope.keys.Z: 	scope.isRollLeft = true; break;	
-			case scope.keys.C: 	scope.isRollRight = true; break;	
-			case scope.keys.Q: 	scope.isTurnLeft = true; break;	
-			case scope.keys.E: 	scope.isTurnRight = true; break;
+		case scope.keys.UP: 	scope.moveForward = true; break;
+		case scope.keys.BOTTOM: scope.moveBackward = true; break;
+		case scope.keys.LEFT: 	scope.moveLeft = true; break;
+		case scope.keys.RIGHT: 	scope.moveRight = true; break;
+		case scope.keys.W: 	scope.moveForward = true; break;
+		case scope.keys.S:	scope.moveBackward = true; break;
+		case scope.keys.A:	scope.moveLeft = true; break;
+		case scope.keys.D:	scope.moveRight = true; break;			
+		case scope.keys.R: 	scope.moveUp = true; break;	
+		case scope.keys.F: 	scope.moveDown = true; break;	
+		case scope.keys.Z: 	scope.isRollLeft = true; break;	
+		case scope.keys.C: 	scope.isRollRight = true; break;	
+		case scope.keys.Q: 	scope.isTurnLeft = true; break;	
+		case scope.keys.E: 	scope.isTurnRight = true; break;
 		}
 	}
 	
 	function onKeyUp( event ) {
 		switch ( event.keyCode ) {
-			case scope.keys.W: 	scope.moveForward = false; break;
-			case scope.keys.S: 	scope.moveBackward = false; break;
-			case scope.keys.A: 	scope.moveLeft = false; break;
-			case scope.keys.D: 	scope.moveRight = false; break;
-			case scope.keys.UP: 	scope.moveForward = false; break;
-			case scope.keys.BOTTOM: scope.moveBackward = false; break;
-			case scope.keys.LEFT: 	scope.moveLeft = false; break;
-			case scope.keys.RIGHT: 	scope.moveRight = false; break;
-			case scope.keys.R: 	scope.moveUp = false; break;	
-			case scope.keys.F: 	scope.moveDown = false; break;	
-			case scope.keys.Z: 	scope.isRollLeft = false; break;	
-			case scope.keys.C: 	scope.isRollRight = false; break;	
-			case scope.keys.Q: 	scope.isTurnLeft = false; break;	
-			case scope.keys.E: 	scope.isTurnRight = false; break;
+		case scope.keys.W: 	scope.moveForward = false; break;
+		case scope.keys.S: 	scope.moveBackward = false; break;
+		case scope.keys.A: 	scope.moveLeft = false; break;
+		case scope.keys.D: 	scope.moveRight = false; break;
+		case scope.keys.UP: 	scope.moveForward = false; break;
+		case scope.keys.BOTTOM: scope.moveBackward = false; break;
+		case scope.keys.LEFT: 	scope.moveLeft = false; break;
+		case scope.keys.RIGHT: 	scope.moveRight = false; break;
+		case scope.keys.R: 	scope.moveUp = false; break;	
+		case scope.keys.F: 	scope.moveDown = false; break;	
+		case scope.keys.Z: 	scope.isRollLeft = false; break;	
+		case scope.keys.C: 	scope.isRollRight = false; break;	
+		case scope.keys.Q: 	scope.isTurnLeft = false; break;	
+		case scope.keys.E: 	scope.isTurnRight = false; break;
 		}
+	}
+	
+	function prueba(){
+		console.debug("LOL")
 	}
 
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
@@ -430,3 +468,4 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 };
 
 THREE.FirstPersonControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+
