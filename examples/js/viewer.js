@@ -383,11 +383,10 @@ var initThree = function (){
 	skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 	// camera and controls
-	//camera.position.set(-304, 0555, 318);
-	//camera.rotation.y = -Math.PI / 4;
-	//camera.rotation.x = -Math.PI / 6;
+	//camera.rotation.y = -Math.PI / 6;
+	//camera.rotation.x = -Math.PI / 10;
 
-	useSpacenavControls();
+	
 
 	
 	// enable frag_depth extension for the interpolation shader, if available
@@ -427,19 +426,21 @@ var initThree = function (){
 			if(firstFlipYZ)
 			flipYZ();
 			camera.zoomTo(pointcloud, 1);
-			
+
+			useSpacenavControls();
+
 			initGUI();	
-			
+			/*
 			if(sceneProperties.cameraPosition != null){
 				var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
 				camera.position.copy(cp);
 			}
 			
-			if(sceneProperties.cameraTarget != null){
-				var ct = new THREE.Vector3(sceneProperties.cameraTarget[0], sceneProperties.cameraTarget[1], sceneProperties.cameraTarget[2]);
+			if(sceneProperties.cameraRotation != null){
+				var ct = new THREE.Vector3(sceneProperties.cameraRotation[0], sceneProperties.cameraRotation[1]);
 				camera.lookAt(ct);
 
-			}
+			}*/
 			
 		});
 	}else if(pointcloudPath.indexOf(".vpc") > 0){
@@ -460,12 +461,14 @@ var initThree = function (){
 			referenceFrame.updateMatrixWorld(true);
 			
 			camera.zoomTo(pointcloud, 1);
-			
+
+			useSpacenavControls();
+
 			initGUI();
 			
 			pointcloud.material.interpolation = false;
 			pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-			
+			/*
 			if(sceneProperties.cameraPosition != null){
 				var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
 				camera.position.copy(cp);
@@ -474,7 +477,7 @@ var initThree = function (){
 			if(sceneProperties.cameraTarget != null){
 				var ct = new THREE.Vector3(sceneProperties.cameraTarget[0], sceneProperties.cameraTarget[1], sceneProperties.cameraTarget[2]);
 				camera.lookAt(ct);
-			}
+			}*/
 			
 		});
 	}

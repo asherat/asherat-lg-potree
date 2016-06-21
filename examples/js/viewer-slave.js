@@ -35,7 +35,7 @@ function flipYZ(){
 
 var defaultPointSize = 0.03;
 var defaultLOD = 15;
-var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+var pointcloudPath;
 var pointclouds = [];
 var render;
 var visnodes;
@@ -69,11 +69,11 @@ var pointcloudPath = sceneProperties.path;
 var elRenderArea = document.getElementById("renderArea");
  var changeEvent = function(event) {
             newPosition = event.target.object.position;
+            newRotation = event.target.object.rotation;
         }
 function initGUI(){}
 var showSkybox = false;
 var snControls;
-
 
  var PotreeRenderer = function(){
 
