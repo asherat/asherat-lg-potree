@@ -53,22 +53,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this._rotateSpeed = 0.3;
 	this.moveSpeed = 10.0;
 
-
-	require(['../libs/multiaxis'],
-	function(MultiAxisModule) 
-	{   
-
-		// *** create and link the MultiAxis module
-		var multiaxis = new MultiAxisModule();
-		multiaxis.on('ready', function(){
-
-		});
-		multiaxis.on('abs', function(){
-			console.debug("ASDASD")
-		});
-		multiaxis.init();
-	});
-
 	this.keys = { 
 		LEFT: 37, 
 		UP: 38, 
@@ -113,6 +97,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	// for reset
 	this.position0 = this.object.position.clone();
+	this.rotation0 = this.object.rotation.clone();
 
 	// events
 
@@ -210,7 +195,31 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 	};
 
+
+	var myDelta;
+	var spaceNavAbs;
+	var needsReset = false;
+	require(['../libs/multiaxis'],
+	function(MultiAxisModule) 
+	{   
+		// *** create and link the MultiAxis module
+		var multiaxis = new MultiAxisModule();
+		multiaxis.on('abs', function(abs){
+			spaceNavAbs = abs;
+			//console.debug(abs)
+		});
+		multiaxis.on('reset', function(){
+			needsReset = true;
+		});
+		multiaxis.init();
+	});
+
+	
+
+
 	this.update = function (delta) {
+    	myDelta = delta;
+
 		this.object.rotation.order = 'ZYX';
 		
 		var object = this.object;
@@ -222,9 +231,29 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		this.object.updateMatrixWorld();
 		
 		var position = this.object.position;
-		
+		if(needsReset)
+			this.reset();
 		if(delta !== undefined){
-			if(this.moveRight){
+			if (spaceNavAbs !== undefined){
+			//console.debug(spaceNavAbs);
+			if (Math.abs(spaceNavAbs.X) > 0)
+				this.panLeft (-delta * spaceNavAbs.X);
+			if (Math.abs(spaceNavAbs.Y) > 0)
+				this.panUp ( -delta * spaceNavAbs.Y);
+			if (Math.abs(spaceNavAbs.Z) > 0)
+				this.panForward ( delta * spaceNavAbs.Z);
+			if (Math.abs(spaceNavAbs.RX) > 0)
+				this.rotateUp ( -delta * spaceNavAbs.RX / 25);
+			if (Math.abs(spaceNavAbs.RY) > 0)
+				this.rotateLeft ( delta * spaceNavAbs.RY / 20);
+			if (Math.abs(spaceNavAbs.RZ) > 0)
+				this.rollLeft (delta * spaceNavAbs.RZ / 15);
+			spaceNavAbs = undefined;
+		}
+			//if (Math.abs(spaceNavAbs.RZ) > 0)
+			//	this.panForward ( delta * spaceNavAbs.RZ);
+
+			/*if(this.moveRight){
 				this.panLeft(-delta * this.moveSpeed);
 			}
 			if(this.moveLeft){
@@ -253,7 +282,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			}
 			if(this.isTurnRight){
 				this.rotateLeft( delta * this._rotateSpeed);
-			}
+			}*/
+			
 		}
 		
 		if(!pan.equals(new THREE.Vector3(0,0,0))){
@@ -333,8 +363,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.reset = function () {
 		state = STATE.NONE;
-
+		spaceNavAbs = undefined
 		this.object.position.copy( this.position0 );
+		this.object.rotation.copy( this.rotation0 );
+		needsReset = false;
 	};
 
 	function onMouseDown( event ) {
@@ -453,10 +485,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 	}
 	
-	function prueba(){
-		console.debug("LOL")
-	}
-
+	
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
