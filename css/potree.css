@@ -50,3 +50,16 @@ body{
 	margin-right: 15px;
 	
 }
+
+#logo{
+	 position: fixed;
+	 /*bottom: 0px;
+	 right: 0px;*/
+}
+
+#logo img{
+	width: 200px;
+	margin: 20px;
+}
+
+

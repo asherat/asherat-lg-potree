@@ -199,7 +199,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	var myDelta;
 	var spaceNavAbs;
 	var needsReset = false;
-	require(['../libs/multiaxis'],
+	require(['libs/multiaxis'],
 	function(MultiAxisModule) 
 	{   
 		// *** create and link the MultiAxis module
@@ -235,25 +235,22 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			this.reset();
 		if(delta !== undefined){
 			if (spaceNavAbs !== undefined){
-			//console.debug(spaceNavAbs);
-			if (Math.abs(spaceNavAbs.X) > 0)
-				this.panLeft (-delta * spaceNavAbs.X);
-			if (Math.abs(spaceNavAbs.Y) > 0)
-				this.panUp ( -delta * spaceNavAbs.Y);
-			if (Math.abs(spaceNavAbs.Z) > 0)
-				this.panForward ( delta * spaceNavAbs.Z);
-			if (Math.abs(spaceNavAbs.RX) > 0)
-				this.rotateUp ( -delta * spaceNavAbs.RX / 25);
-			if (Math.abs(spaceNavAbs.RY) > 0)
-				this.rotateLeft ( delta * spaceNavAbs.RY / 20);
-			if (Math.abs(spaceNavAbs.RZ) > 0)
-				this.rollLeft (delta * spaceNavAbs.RZ / 15);
-			spaceNavAbs = undefined;
-		}
-			//if (Math.abs(spaceNavAbs.RZ) > 0)
-			//	this.panForward ( delta * spaceNavAbs.RZ);
-
-			/*if(this.moveRight){
+				//console.debug(spaceNavAbs);
+				if (Math.abs(spaceNavAbs.X) > 0)
+					this.panLeft (-delta * spaceNavAbs.X);
+				if (Math.abs(spaceNavAbs.Y) > 0)
+					this.panUp ( -delta * spaceNavAbs.Y);
+				if (Math.abs(spaceNavAbs.Z) > 0)
+					this.panForward ( delta * spaceNavAbs.Z);
+				if (Math.abs(spaceNavAbs.RX) > 0)
+					this.rotateUp ( -delta * spaceNavAbs.RX / 25);
+				if (Math.abs(spaceNavAbs.RY) > 0)
+					this.rotateLeft ( delta * spaceNavAbs.RY / 20);
+				if (Math.abs(spaceNavAbs.RZ) > 0)
+					this.rollLeft (delta * spaceNavAbs.RZ / 15);
+				spaceNavAbs = undefined;
+			}
+			if(this.moveRight){
 				this.panLeft(-delta * this.moveSpeed);
 			}
 			if(this.moveLeft){
@@ -282,7 +279,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			}
 			if(this.isTurnRight){
 				this.rotateLeft( delta * this._rotateSpeed);
-			}*/
+			}
 			
 		}
 		
@@ -497,4 +494,3 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 };
 
 THREE.FirstPersonControls.prototype = Object.create( THREE.EventDispatcher.prototype );
-
