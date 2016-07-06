@@ -99,8 +99,42 @@ function setMaterial(value){
 	}
 };
 
-var changeArgs     = { rotation: null, position: null};//, phiDelta: null, thetaDelta: null};
-var lastChangeArgs = { rotation: null, position: null};//, phiDelta: null, thetaDelta: null };
+function setClipMode(value){
+		if(value === "No Clipping"){
+			clipMode = Potree.ClipMode.DISABLED;
+		}else if(value === "Clip Outside"){
+			clipMode = Potree.ClipMode.CLIP_OUTSIDE;
+		}else if(value === "Highlight Inside"){
+			clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
+		}
+}
+
+var changeArgs     = { 
+	rotation: null,
+	position: null,
+	"points": pointCountTarget,
+	"pointSize": pointSize,
+	"FOV": fov,
+	"opacity": opacity,
+	"sizeType": sceneProperties.sizeType,
+	"material": sceneProperties.material,
+	"quality": sceneProperties.quality,
+		"EDL": sceneProperties.useEDL,
+		"skybox": showSkybox,
+
+		"MinNodeSize": minNodeSize,
+		
+		"stats": showStats,
+		"BoundingBox": showBoundingBox,
+
+		"freeze": freeze,
+
+};
+var lastChangeArgs = {
+	rotation: null,
+	position: null,
+
+};
 var guiChanged = false;
 var preRenderMaster = function () {
 	// Send a packet to the slave if:
@@ -120,8 +154,7 @@ var preRenderMaster = function () {
 	else {
 		changeArgs.skipSlaveRender = 1;
 	}
-	//lastChangeArgs.LOD       = changeArgs.LOD;
-	//lastChangeArgs.pointsize = changeArgs.pointsize;
+
 
 	if (changeArgs.position !== null) {
 		lastChangeArgs.position  = changeArgs.position;
@@ -156,8 +189,60 @@ var preRenderSlave = function (a) {
 	camera.rotation.copy(a.rotation)
 	camera.rotateOnAxis((new THREE.Vector3(0, -1, 0)), yawOffset*rotationAngle*Math.PI/180);
 
-	scene.children.forEach(function(c) { c.LOD = a.LOD; });
-	scene.children[0].material.size = a.pointsize;
+	if(pointcloud !== undefined){
+		pointCountTarget = a.points;
+		pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+
+		pointSize = a.pointSize;
+		pointcloud.material.size = pointSize;
+
+		fov = a.FOV;
+
+		pointcloud.material.opacity = a.opacity;
+		
+		setPointSizeType(a.sizeType);
+		pointcloud.material.pointSizeType = pointSizeType;
+
+		setMaterial(a.material);
+		pointcloud.material.pointColorType = pointColorType;
+
+		setQuality(a.quality);
+		pointcloud.material.pointShape = (quality === "Circles") ? Potree.PointShape.CIRCLE : Potree.PointShape.SQUARE;
+		pointcloud.material.interpolate = (quality === "Interpolation");
+
+		sceneProperties.useEDL = a.EDL;
+
+		showSkybox = a.skybox;
+
+		minNodeSize = a.MinNodeSize;
+
+		showStats = a.stats;
+		if(stats === undefined){
+			stats = new Stats();
+			document.getElementById("logo").appendChild(stats.domElement);
+		}
+		if(stats && showStats){
+			document.getElementById("lblNumVisibleNodes").style.display = "";
+			document.getElementById("lblNumVisiblePoints").style.display = "";
+			stats.domElement.style.display = "";
+			
+			stats.update();
+			
+			if(pointcloud){
+				document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
+				document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
+			}
+		}else if(stats){
+			document.getElementById("lblNumVisibleNodes").style.display = "none";
+			document.getElementById("lblNumVisiblePoints").style.display = "none";
+			stats.domElement.style.display = "none";
+		}
+
+		showBoundingBox = a.BoundingBox;
+		pointcloud.showBoundingBox = showBoundingBox;
+
+		freeze = a.freeze;
+	}
 };
 
 var changeEvent = function(event) {
@@ -176,7 +261,7 @@ function initGUI(){
 	
 	params = {
 		"points(m)": pointCountTarget,
-PointSize: pointSize,
+		"PointSize": pointSize,
 		"FOV": sceneProperties.fov,
 		"opacity": opacity,
 		"SizeType" : sceneProperties.sizeType,
@@ -196,7 +281,9 @@ PointSize: pointSize,
 	
 	var pPoints = gui.add(params, 'points(m)', 0, 4);
 	pPoints.onChange(function(value){
-		pointCountTarget = value ;
+		pointCountTarget = value;
+		changeArgs.points = value;
+		guiChanged = true;
 	});
 	
 	var fAppearance = gui.addFolder('Appearance');
@@ -204,21 +291,30 @@ PointSize: pointSize,
 	var pPointSize = fAppearance.add(params, 'PointSize', 0, 3);
 	pPointSize.onChange(function(value){
 		pointSize = value;
+		changeArgs.pointSize = value;
+		guiChanged = true;
 	});
 	
 	var fFOV = fAppearance.add(params, 'FOV', 20, 100);
 	fFOV.onChange(function(value){
 		fov = value;
+		changeArgs.FOV = value;
+		guiChanged = true;
+
 	});
 	
 	var pOpacity = fAppearance.add(params, 'opacity', 0, 1);
 	pOpacity.onChange(function(value){
 		opacity = value;
+		changeArgs.opacity = value;
+		guiChanged = true;
 	});
 	
 	var pSizeType = fAppearance.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
 	pSizeType.onChange(function(value){
 		setPointSizeType(value);
+		changeArgs.sizeType = value;
+		guiChanged = true;
 	});
 	
 
@@ -264,6 +360,8 @@ PointSize: pointSize,
 	pMaterial = fAppearance.add(params, 'Materials',options);
 	pMaterial.onChange(function(value){
 		setMaterial(value);
+		changeArgs.material = value;
+		guiChanged = true;
 	});
 	
 	var qualityOptions = ["Squares", "Circles"];
@@ -276,6 +374,8 @@ PointSize: pointSize,
 	var pQuality = fAppearance.add(params, 'quality', qualityOptions);
 	pQuality.onChange(function(value){
 		quality = value;
+		changeArgs.quality = value;
+		guiChanged = true;
 	});
 	
 	if(Potree.Features.SHADER_EDL.isSupported()){
@@ -288,6 +388,8 @@ PointSize: pointSize,
 	var pSykbox = fAppearance.add(params, 'skybox');
 	pSykbox.onChange(function(value){
 		showSkybox = value;
+		changeArgs.skybox = value;
+		guiChanged = true;
 	});
 	
 	var pSponsors = fAppearance.add(params, 'sponsors');
@@ -298,13 +400,9 @@ PointSize: pointSize,
 	
 	var pClipMode = fSettings.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
 	pClipMode.onChange(function(value){
-		if(value === "No Clipping"){
-			clipMode = Potree.ClipMode.DISABLED;
-		}else if(value === "Clip Outside"){
-			clipMode = Potree.ClipMode.CLIP_OUTSIDE;
-		}else if(value === "Highlight Inside"){
-			clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
-		}
+		setClipMode(value);
+		changeArgs.clipMode = value;
+		guiChanged = true;
 	});
 	
 	var pDEMCollisions = fSettings.add(params, 'DEM Collisions');
@@ -315,6 +413,8 @@ PointSize: pointSize,
 	var pMinNodeSize = fSettings.add(params, 'MinNodeSize', 0, 1500);
 	pMinNodeSize.onChange(function(value){
 		minNodeSize = value;
+		changeArgs.MinNodeSize = value;
+		guiChanged = true;
 	});
 	
 	
@@ -326,24 +426,27 @@ PointSize: pointSize,
 	var pStats = fDebug.add(params, 'stats');
 	pStats.onChange(function(value){
 		showStats = value;
+		changeArgs.stats = value;
+		guiChanged = true;
 	});
 	
 	var pBoundingBox = fDebug.add(params, 'BoundingBox');
 	pBoundingBox.onChange(function(value){
 		showBoundingBox = value;
+		changeArgs.BoundingBox = value;
+		guiChanged = true;
 	});
 	
 	var pFreeze = fDebug.add(params, 'freeze');
 	pFreeze.onChange(function(value){
 		freeze = value;
+		changeArgs.freeze = value;
+		guiChanged = true;
 	});
 
 	// stats
 	stats = new Stats();
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.top = '0px';
-	stats.domElement.style.margin = '5px';
-	document.body.appendChild( stats.domElement );
+	document.getElementById("logo").appendChild( stats.domElement );
 	
 
 }
@@ -380,7 +483,7 @@ var initThree = function (){
 	else
 	elRenderArea.appendChild(renderer.domElement);
 	
-	skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
+	skybox = Potree.utils.loadSkybox("resources/textures/skybox/");
 
 	// camera and controls
 	//camera.rotation.y = -Math.PI / 6;
@@ -401,7 +504,7 @@ var initThree = function (){
 			
 			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			pointcloud.material.size = pointSize;
-			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
 			
 			referenceFrame.add(pointcloud);
 			
@@ -613,7 +716,7 @@ var PotreeRenderer = function(){
 			
 			var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 			
-			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
 			pointcloud.material.size = pointSize;
 			pointcloud.material.opacity = opacity;
 			pointcloud.material.pointColorType = pointColorType;
@@ -734,7 +837,7 @@ var HighQualityRenderer = function(){
 			depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 			attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 			
-			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
 			var originalMaterial = pointcloud.material;
 			
 			{// DEPTH PASS
@@ -896,7 +999,7 @@ var EDLRenderer = function(){
 			
 			var octreeSize = pointcloud.pcoGeometry.boundingBox.size().x;
 			
-			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
 			var originalMaterial = pointcloud.material;
 			
 			{// COLOR & DEPTH PASS
@@ -957,7 +1060,7 @@ render = function (initialScene) {
 		requestAnimationFrame(this.render.bind(this));
 	}
 	
-	Potree.pointLoadLimit = pointCountTarget * 2 * 1000 * 1000;
+	Potree.pointLoadLimit = pointCountTarget * 2 * 1000.00 * 1000.00;
 	
 	directionalLight.position.copy(camera.position);
 	directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection()));
@@ -1007,28 +1110,27 @@ render = function (initialScene) {
 			pointcloud.update(camera, renderer);
 		}
 	}
-	
-	if(stats && showStats){
-		document.getElementById("lblNumVisibleNodes").style.display = "";
-		document.getElementById("lblNumVisiblePoints").style.display = "";
-		stats.domElement.style.display = "";
-		
-		stats.update();
-		
-		if(pointcloud){
+	if(stats){
+		if(showStats){
+			document.getElementById("lblNumVisibleNodes").style.display = "";
+			document.getElementById("lblNumVisiblePoints").style.display = "";
+			stats.domElement.style.display = "";
+
+			stats.update();
+
 			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
 			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
+		}else{
+			document.getElementById("lblNumVisibleNodes").style.display = "none";
+			document.getElementById("lblNumVisiblePoints").style.display = "none";
+			stats.domElement.style.display = "none";
 		}
-	}else if(stats){
-		document.getElementById("lblNumVisibleNodes").style.display = "none";
-		document.getElementById("lblNumVisiblePoints").style.display = "none";
-		stats.domElement.style.display = "none";
 	}
 	
 	if(sponsors)
-	document.getElementById("sponsors").style.display = "inline";
+		document.getElementById("sponsors").style.display = "inline";
 	else
-	document.getElementById("sponsors").style.display = "none";
+		document.getElementById("sponsors").style.display = "none";
 	
 	camera.fov = fov;
 	

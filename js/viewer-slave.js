@@ -33,6 +33,7 @@ function flipYZ(){
 	referenceFrame.updateMatrixWorld(true);
 }
 
+
 var defaultPointSize = 0.03;
 var defaultLOD = 15;
 var pointcloudPath;
@@ -42,6 +43,7 @@ var visnodes;
 var controls;
 
 var stats;
+
 var fov = sceneProperties.fov;
 var pointSize = sceneProperties.pointSize;
 var pointCountTarget = sceneProperties.pointLimit;
@@ -71,7 +73,60 @@ var elRenderArea = document.getElementById("renderArea");
             newPosition = event.target.object.position;
             newRotation = event.target.object.rotation;
         }
-function initGUI(){}
+
+
+function setPointSizeType(value){
+	if(value === "Fixed"){
+		pointSizeType = Potree.PointSizeType.FIXED;
+	}else if(value === "Attenuated"){
+		pointSizeType = Potree.PointSizeType.ATTENUATED;
+	}else if(value === "Adaptive"){
+		pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	}
+
+};
+
+
+function setQuality(value){
+	
+
+	if(value == "Interpolation" && !Potree.Features.SHADER_INTERPOLATION.isSupported()){
+		quality = "Squares";
+	}else if(value == "Splats" && !Potree.Features.SHADER_SPLATS.isSupported()){
+		quality = "Squares";
+	}else{
+		quality = value;
+	}
+};
+
+function setMaterial(value){
+	if(value === "RGB"){
+		pointColorType = Potree.PointColorType.RGB;
+	}else if(value === "Color"){
+		pointColorType = Potree.PointColorType.COLOR;
+	}else if(value === "Elevation"){
+		pointColorType = Potree.PointColorType.HEIGHT;
+	}else if(value === "Intensity"){
+		pointColorType = Potree.PointColorType.INTENSITY;
+	}else if(value === "Intensity Gradient"){
+		pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
+	}else if(value === "Classification"){
+		pointColorType = Potree.PointColorType.CLASSIFICATION;
+	}else if(value === "Return Number"){
+		pointColorType = Potree.PointColorType.RETURN_NUMBER;
+	}else if(value === "Source"){
+		pointColorType = Potree.PointColorType.SOURCE;
+	}else if(value === "Tree Depth"){
+		pointColorType = Potree.PointColorType.TREE_DEPTH;
+	}else if(value === "Point Index"){
+		pointColorType = Potree.PointColorType.POINT_INDEX;
+	}else if(value === "Normal"){
+		pointColorType = Potree.PointColorType.NORMAL;
+	}else if(value === "Phong"){
+		pointColorType = Potree.PointColorType.PHONG;
+	}
+};
+function initGUI(){	}
 var showSkybox = false;
 var snControls;
 
