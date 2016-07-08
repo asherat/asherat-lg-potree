@@ -119,15 +119,13 @@ var changeArgs     = {
 	"sizeType": sceneProperties.sizeType,
 	"material": sceneProperties.material,
 	"quality": sceneProperties.quality,
-		"EDL": sceneProperties.useEDL,
-		"skybox": showSkybox,
-
-		"MinNodeSize": minNodeSize,
-		
-		"stats": showStats,
-		"BoundingBox": showBoundingBox,
-
-		"freeze": freeze,
+	"EDL": sceneProperties.useEDL,
+	"skybox": showSkybox,
+	"MinNodeSize": minNodeSize,
+	"stats": showStats,
+	"BoundingBox": showBoundingBox,
+	"freeze": freeze,
+	"flipYZ": false,
 
 };
 var lastChangeArgs = {
@@ -242,6 +240,9 @@ var preRenderSlave = function (a) {
 		pointcloud.showBoundingBox = showBoundingBox;
 
 		freeze = a.freeze;
+
+		if(a.flipYZ != isFlipYZ)
+			flipYZ();
 	}
 };
 
@@ -252,6 +253,8 @@ var changeEvent = function(event) {
 
 function initGUI(){
 
+	flipYZ();
+	flipYZ();
 	setPointSizeType(sceneProperties.sizeType);
 	setQuality(sceneProperties.quality);
 	setMaterial(sceneProperties.material);
@@ -276,18 +279,21 @@ function initGUI(){
 		"DEM Collisions": useDEMCollisions,
 		"MinNodeSize": minNodeSize,
 		"freeze": freeze,
-		"sponsors": sponsors
+		"sponsors": sponsors,
+		"FlipYZ": firstFlipYZ
 	};
 	
-	var pPoints = gui.add(params, 'points(m)', 0, 4);
+
+	
+	var fAppearance = gui.addFolder('Appearance');
+	
+	var pPoints = fAppearance.add(params, 'points(m)', 0, 4);
 	pPoints.onChange(function(value){
 		pointCountTarget = value;
 		changeArgs.points = value;
 		guiChanged = true;
 	});
-	
-	var fAppearance = gui.addFolder('Appearance');
-	
+
 	var pPointSize = fAppearance.add(params, 'PointSize', 0, 3);
 	pPointSize.onChange(function(value){
 		pointSize = value;
@@ -385,10 +391,16 @@ function initGUI(){
 		});
 	}
 	
+	var pFlipYZ = fAppearance.add(params, 'FlipYZ');
+	pFlipYZ.onChange(function(value){
+		flipYZ();
+		guiChanged = true;
+	});
+
 	var pSykbox = fAppearance.add(params, 'skybox');
 	pSykbox.onChange(function(value){
 		showSkybox = value;
-		changeArgs.skybox = value;
+		changeArgs.flipYZ = value;
 		guiChanged = true;
 	});
 	
@@ -618,8 +630,11 @@ map: texture
 
 }
 
+
+
 function flipYZ(){
 	isFlipYZ = !isFlipYZ;
+	changeArgs.flipYZ = isFlipYZ;
 	
 	if(isFlipYZ){
 		referenceFrame.matrix.copy(new THREE.Matrix4());
