@@ -1,0 +1,7 @@
+browser_file="/tmp/browser_id"
+WID_CMD='$(cat '$browser_file')'
+export_cmd="export DISPLAY=:0.0"
+
+lg-run "$export_cmd && xdotool search --onlyvisible --class chromium|head -1 >" $browser_file
+lg-run "$export_cmd && xdotool windowactivate $WID_CMD"
+lg-run "$export_cmd && xdotool key ctrl+F5"
