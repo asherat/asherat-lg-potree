@@ -20,7 +20,7 @@ if (isset($_REQUEST['initPeruse']) and ($_REQUEST['initPeruse'] != '') and isset
         $var1 = "Connecting to: " . $_REQUEST['initPeruse'] . ":" . $_REQUEST['port'];
         $var2 = $_REQUEST['initPeruse'] . " " . $_REQUEST['port'];
 
-        echo "$var1"; 
+        //echo "$var1"; 
         $stream = ssh2_exec($connection, 'export PATH=$PATH:/home/lg/bin && lg-potree '. $var2);
 
 
@@ -60,7 +60,7 @@ if (isset($_REQUEST['initPeruse']) and ($_REQUEST['initPeruse'] != '') and isset
 if(isset($stream)){
     stream_set_blocking($stream, true);
     $stream_out = ssh2_fetch_stream($stream, SSH2_STREAM_STDIO);
-    stream_get_contents($stream_out); 
+    echo stream_get_contents($stream_out); 
 }
 
 ?>
