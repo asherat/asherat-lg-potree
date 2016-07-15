@@ -1,0 +1,26 @@
+{
+  "port": 8086,
+  "udp_port": 8086,
+  "hyperlapse_delay": 450,
+  "touchscreen": {
+    "default_center": [41.4101565,2.2211376],
+    "poi_url": "/touchscreen/poi-atmosphere.json",
+    "activities": [
+      { "title": "Google Earth", "app": "earth" },
+      { "title": "Map Dive", "app": "mapsdive" }
+    ],
+    "show_photospheres": false,
+    "show_zoomctl": true,
+    "font_scale": 1.0
+  },
+  "display": {
+    "default_pano": "idVwfz2deisQ3yLTGTdThQ",
+    "default_pano": "AW-WdYei-bjiI-WOAGxdkw",
+    "yawoffset": 50,
+    "zoom": 3,
+    "mode": "html5",
+    "show_links": true
+  },
+  "cloudPoint": "lion_takanawa"
+  
+}

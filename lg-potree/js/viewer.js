@@ -32,7 +32,7 @@ var controls;
 var snControls;
 var progressBar = new ProgressBar();
 
-var pointcloudPath = sceneProperties.path;
+
 
 var elRenderArea = document.getElementById("renderArea");
 
@@ -49,6 +49,8 @@ var clock = new THREE.Clock();
 var showSkybox = false;
 var referenceFrame;
 
+var CPManager;
+var pointcloudPath; // = sceneProperties.path;
 function setPointSizeType(value){
 	if(value === "Fixed"){
 		pointSizeType = Potree.PointSizeType.FIXED;
@@ -250,6 +252,7 @@ var changeEvent = function(event) {
 	changeArgs.rotation = event.target.object.rotation.clone();
 	changeArgs.position = event.target.object.position.clone();
 }
+
 
 function initGUI(){
 
@@ -462,6 +465,33 @@ function initGUI(){
 	
 
 }
+function getPath(onDone){
+		if(CPManager === undefined){
+		    // Create SocketIO instance, connect
+		    CPManager = io.connect('/manager');
+
+		    // Add a connect listener
+		    CPManager.on('connect',function() {
+		      console.log('Client has connected to the server!');
+		      CPManager.emit('getJSONfile');
+		    });
+		    CPManager.on('changeCPData',function(data) {
+		    	console.log("REFRESH");
+			     window.location.reload(true); 
+		    });
+
+		    // Add a disconnect listener
+		    CPManager.on('disconnect',function() {
+		      console.log('The client has disconnected!');
+		    });
+				
+		   	CPManager.on('sendJSONfile', function(data, callback){
+		   		console.debug("New Cloud Point:", data);
+		   		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
+		   		onDone(current_pointcloudPath);
+		   	});
+   	}
+}
 
 var initThree = function (){
 	var width = elRenderArea.clientWidth;
@@ -506,96 +536,98 @@ var initThree = function (){
 	
 	// enable frag_depth extension for the interpolation shader, if available
 	renderer.context.getExtension("EXT_frag_depth");
-	
+
 	// load pointcloud
-	if(!pointcloudPath){
-		
-	}else if(pointcloudPath.indexOf("cloud.js") > 0){
-		Potree.POCLoader.load(pointcloudPath, function(geometry){
-			pointcloud = new Potree.PointCloudOctree(geometry);
-			
-			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			pointcloud.material.size = pointSize;
-			pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
-			
-			referenceFrame.add(pointcloud);
-			
-			referenceFrame.updateMatrixWorld(true);
-			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-			
-			referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-			referenceFrame.updateMatrixWorld(true);
-			
-			if(sg.radius > 50*1000){
-				camera.near = 10;
-			}else if(sg.radius > 10*1000){
-				camera.near = 2;
-			}else if(sg.radius > 1000){
-				camera.near = 1;
-			}else if(sg.radius > 100){
-				camera.near = 0.5;
-			}else{
-				camera.near = 0.1;
-			}
+	getPath(function(pointcloudPath){ 
 
-			if(firstFlipYZ)
-			flipYZ();
-			camera.zoomTo(pointcloud, 1);
+		if(pointcloudPath.indexOf("cloud.js") > 0){
+			Potree.POCLoader.load(pointcloudPath, function(geometry){
+				pointcloud = new Potree.PointCloudOctree(geometry);
+				
+				pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				pointcloud.material.size = pointSize;
+				pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
+				
+				referenceFrame.add(pointcloud);
+				
+				referenceFrame.updateMatrixWorld(true);
+				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				
+				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+				referenceFrame.updateMatrixWorld(true);
+				
+				if(sg.radius > 50*1000){
+					camera.near = 10;
+				}else if(sg.radius > 10*1000){
+					camera.near = 2;
+				}else if(sg.radius > 1000){
+					camera.near = 1;
+				}else if(sg.radius > 100){
+					camera.near = 0.5;
+				}else{
+					camera.near = 0.1;
+				}
 
-			useSpacenavControls();
+				if(firstFlipYZ)
+				flipYZ();
+				camera.zoomTo(pointcloud, 1);
+				
 
-			initGUI();	
-			/*
-			if(sceneProperties.cameraPosition != null){
-				var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
-				camera.position.copy(cp);
-			}
-			
-			if(sceneProperties.cameraRotation != null){
-				var ct = new THREE.Vector3(sceneProperties.cameraRotation[0], sceneProperties.cameraRotation[1]);
-				camera.lookAt(ct);
+				useSpacenavControls();
 
-			}*/
-			
-		});
-	}else if(pointcloudPath.indexOf(".vpc") > 0){
-		Potree.PointCloudArena4DGeometry.load(pointcloudPath, function(geometry){
-			pointcloud = new Potree.PointCloudArena4D(geometry);
-			pointcloud.visiblePointsTarget = 500*1000;
-			
-			referenceFrame.add(pointcloud);
-			
-			if(firstFlipYZ)
-			flipYZ();
-			
-			referenceFrame.updateMatrixWorld(true);
-			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-			
-			referenceFrame.position.sub(sg.center);
-			referenceFrame.position.y += sg.radius / 2;
-			referenceFrame.updateMatrixWorld(true);
-			
-			camera.zoomTo(pointcloud, 1);
+				initGUI();	
+				/*
+				if(sceneProperties.cameraPosition != null){
+					var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
+					camera.position.copy(cp);
+				}
+				
+				if(sceneProperties.cameraRotation != null){
+					var ct = new THREE.Vector3(sceneProperties.cameraRotation[0], sceneProperties.cameraRotation[1]);
+					camera.lookAt(ct);
 
-			useSpacenavControls();
+				}*/
+				
+			});
+		}else if(pointcloudPath.indexOf(".vpc") > 0){
+			Potree.PointCloudArena4DGeometry.load(pointcloudPath, function(geometry){
+				pointcloud = new Potree.PointCloudArena4D(geometry);
+				pointcloud.visiblePointsTarget = 500*1000;
+				
+				referenceFrame.add(pointcloud);
+				
+				if(firstFlipYZ)
+				flipYZ();
+				
+				referenceFrame.updateMatrixWorld(true);
+				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				
+				referenceFrame.position.sub(sg.center);
+				referenceFrame.position.y += sg.radius / 2;
+				referenceFrame.updateMatrixWorld(true);
+				
+				camera.zoomTo(pointcloud, 1);
 
-			initGUI();
-			
-			pointcloud.material.interpolation = false;
-			pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-			/*
-			if(sceneProperties.cameraPosition != null){
-				var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
-				camera.position.copy(cp);
-			}
-			
-			if(sceneProperties.cameraTarget != null){
-				var ct = new THREE.Vector3(sceneProperties.cameraTarget[0], sceneProperties.cameraTarget[1], sceneProperties.cameraTarget[2]);
-				camera.lookAt(ct);
-			}*/
-			
-		});
-	}
+				useSpacenavControls();
+
+				initGUI();
+				
+				pointcloud.material.interpolation = false;
+				pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
+				/*
+				if(sceneProperties.cameraPosition != null){
+					var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
+					camera.position.copy(cp);
+				}
+				
+				if(sceneProperties.cameraTarget != null){
+					var ct = new THREE.Vector3(sceneProperties.cameraTarget[0], sceneProperties.cameraTarget[1], sceneProperties.cameraTarget[2]);
+					camera.lookAt(ct);
+				}*/
+				
+			});
+		}
+	});
 	
 	var grid = Potree.utils.createGrid(5, 5, 2);
 	scene.add(grid);
@@ -608,7 +640,7 @@ var initThree = function (){
 	var bg = new THREE.Mesh(
 	new THREE.PlaneBufferGeometry(2, 2, 0),
 	new THREE.MeshBasicMaterial({
-map: texture
+		map: texture
 	})
 	);
 	
@@ -625,6 +657,7 @@ map: texture
 	
 	var light = new THREE.AmbientLight( 0x555555 ); // soft white light
 	scenePointCloud.add( light );
+	
 	
 	return { "scene" : scene, "camera" : camera, "renderer" : renderer };
 
@@ -1190,11 +1223,13 @@ render = function (initialScene) {
 };
 
 
+	
 THREE.lg_init('appname', preRenderMaster, preRenderSlave, initThree, render, true);
 a = initThree();
 scene = a.scene;
 camera = a.camera;
 
 render();
+
 
 //initGUI();

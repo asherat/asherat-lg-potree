@@ -126,6 +126,35 @@ function setMaterial(value){
 		pointColorType = Potree.PointColorType.PHONG;
 	}
 };
+
+var CPManager;
+function getPath(onDone){
+		if(CPManager === undefined){
+		    // Create SocketIO instance, connect
+		    CPManager = io.connect('/manager');
+
+		    // Add a connect listener
+		    CPManager.on('connect',function() {
+		      console.log('Client has connected to the server!');
+		      CPManager.emit('getJSONfile');
+		    });
+		    CPManager.on('changeCPData',function(data) {
+		    	console.log("REFRESH");
+			     window.location.reload(true); 
+		    });
+
+		    // Add a disconnect listener
+		    CPManager.on('disconnect',function() {
+		      console.log('The client has disconnected!');
+		    });
+				
+		   	CPManager.on('sendJSONfile', function(data, callback){
+		   		console.debug("New Cloud Point:", data);
+		   		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
+		   		onDone(current_pointcloudPath);
+		   	});
+   	}
+}
 function initGUI(){	}
 var showSkybox = false;
 var snControls;

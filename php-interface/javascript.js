@@ -86,3 +86,4 @@ function RefreshBrowsers() {
   submitRequest('change.php?refresh');
   showAndHideStatus();
 }
+
