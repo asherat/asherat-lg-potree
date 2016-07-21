@@ -11,7 +11,7 @@
     <nav>
     <ul>
     <h1>Liquid Galaxy Cloud Point Viewer</h1>
-     <li><a href="peruse.php">Potree</a></li>
+     <li><a href="init.php">Potree</a></li>
      <li><a href="tools.php">Tools</a></li>
 
 	<li><a id="back" href="../index.php">Liquid Galaxy Menu</a></li>

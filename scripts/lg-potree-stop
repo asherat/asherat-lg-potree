@@ -1,1 +1,0 @@
-lg-run "killall -q node; killall -q spacenav-emitter; killall -q chromium-browser" &
