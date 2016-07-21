@@ -46,43 +46,10 @@ function submitRequest(url) {
   req.open('GET', url, true);
   req.send(null);
 }
-function sendQuery(query) {
-  submitRequest('change.php?query=' + query);
-  showAndHideStatus();
-}
-function showAndHideStatus() {
-  var status = document.getElementById('status');
-  status.style.opacity = 1;
-  window.setTimeout('document.getElementById("status").style.opacity = 0;', 5000);
-}
 
-
-
-
-function initPeruse() {
-  var myIp = document.getElementById('myIP').value;
-  var myPort = document.getElementById('myPORT').value;
-  submitRequest('change.php?initPeruse=' + myIp + '&port=' + myPort);
-  showAndHideStatus();
-}
-
-
-function openManager(){
-  var myIP = document.getElementById('myIP').value;
-  var myPORT = document.getElementById('myPORT').value;
-
-  var url = 'http://' + myIP +':'+ myPORT +'/lg-potree/manager';
-  var win = window.open(url, '_blank');
-  win.focus();
-}
 
 function RefreshBrowsers() {
-  var myIp = document.getElementById('myIP').value;  
-  submitRequest('change.php?refresh=' + myIp);
+  submitRequest('change.php?refresh');
   showAndHideStatus();
 }
-function stopAll() {
-  var myIp = document.getElementById('myIP').value;  
-  submitRequest('change.php?stop=' + myIp);
-  showAndHideStatus();
-}
+

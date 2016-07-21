@@ -1,2 +1,0 @@
-find_id='$(xdotool search --onlyvisible --class chromium|head -1)'
-lg-run "export DISPLAY=:0.0 sdas&& xdotool windowactivate $find_id && xdotool key ctrl+F5" 
