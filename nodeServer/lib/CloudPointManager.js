@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 
 function CPMRelay( io, cpfile) {
   var cpManager = io
@@ -18,10 +19,23 @@ function CPMRelay( io, cpfile) {
     		
     	});
 	socket.on('getCPDirs', function(){
-		fs.readdir('public/lg-potree/resources/pointclouds', function(err, items){
-			socket.emit('CPDir',items);
-		});
-		
+		var srcpath = path.resolve(path.dirname(require.main.filename), '../public/lg-potree/resources/pointclouds');
+		socket.emit("error", srcpath);
+		try{
+			items = fs.readdirSync(srcpath).filter(function(file) {
+			    return fs.statSync(path.join(srcpath, file)).isDirectory();
+			  });
+			socket.emit('CPDir', items);
+		} catch (e) {
+			if (e.code === 'ENOENT') {
+				console.log("Directory not found!");
+				socket.emit("error", "Directory not found");
+			}else{
+				console.log("Found error:", e);
+				socket.emit("error", e);
+			}
+		}
+
 	});
       socket.on('getJSONfile', function(){
         socket.emit('sendJSONfile', cpfile);
