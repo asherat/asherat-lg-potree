@@ -14,6 +14,8 @@ socket.on('disconnect',function() {
 });
 
 socket.on( 'CPDir', function( data ) {
+	console.debug("RECEIVED:", data);
+	if (!data) return;
 	data = data.sort();
 	var content = $( "#cpFiles" ).html();
 	for (i = 0; i < data.length; i++) { 
@@ -27,7 +29,9 @@ socket.on( 'CPDir', function( data ) {
 	}
 	$( "#cpFiles" ).html( content );
 });
-
+socket.on( 'error', function( err ) {
+	console.error("FOUND ERROR", err);
+});
 
 $( document ).ready(function() {
 	socket.emit('getCPDirs');
