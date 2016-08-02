@@ -14,7 +14,7 @@
 			<li>
 				<h5>Please, fill in the IP and ports BEFORE initializing the Node.js server or connecting the SpaceNavigator</h5>
 				<label for="myIP"> Liquid Galaxy IP </label>
-				<input type="text"  id = "myIP" value="192.168.1.45">
+				<input type="text"  id = "myIP" value="10.160.101.46">
 			</li>
 			<li>
 				<label> NodeJS IP </label>
@@ -34,7 +34,6 @@
 			<li><a href="#" onclick="stopAll()">Close LG-Potree</a></li>
 
 
-			
 		</ul>
 		<ul>
 			<h1>Tools</h1>

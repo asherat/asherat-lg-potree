@@ -33,7 +33,7 @@ socket.on( 'error', function( err ) {
 	console.error("FOUND ERROR", err);
 });
 
-$( document ).ready(function() {
+$(document).ready(function() {
 	socket.emit('getCPDirs');
 });		    
 

@@ -20,7 +20,6 @@ function CPMRelay( io, cpfile) {
     	});
 	socket.on('getCPDirs', function(){
 		var srcpath = path.resolve(path.dirname(require.main.filename), '../public/lg-potree/resources/pointclouds');
-		socket.emit("error", srcpath);
 		try{
 			items = fs.readdirSync(srcpath).filter(function(file) {
 			    return fs.statSync(path.join(srcpath, file)).isDirectory();
