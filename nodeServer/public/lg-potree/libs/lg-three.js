@@ -31,11 +31,12 @@ VIEWSYNC.Connection = function(appname, master, url) {
     if (master) {
         switch (pov.type) { 
             case 'request-initialization':
-                sendInitialization();
+                //sendInitialization();
                 break;
         }
     }
     else {
+	console.log(THREELG);
         switch (pov.type) {
             case 'initialization':
                 THREELG.prerenderSlave = eval("(" + pov.prerenderSlave + ")");
@@ -83,7 +84,7 @@ THREE.lg_init = function(appname, prerenderMaster, prerenderSlave, initialScene,
     if (master) {
         THREE.__old_WebGLRenderer = THREE.WebGLRenderer;
         THREE.WebGLRenderer = function() {
-            console.log("Here's my wrapper THREE.WebGLRenderer");
+            //console.log("Here's my wrapper THREE.WebGLRenderer");
             wglr = new THREE.__old_WebGLRenderer();
         //    wglr.__old_setSize = wglr.setSize;
         //    wglr.setSize = function(width, height) {

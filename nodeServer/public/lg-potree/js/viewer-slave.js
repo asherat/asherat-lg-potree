@@ -182,7 +182,7 @@ var snControls;
 			renderer.render(sceneBG, cameraBG);
 		}
 		
-		if(renderer.pointcloud){
+		if(renderer !== "undefined" && renderer.pointcloud  !== "undefined"){
 			if(pointcloud.originalMaterial){
 				pointcloud.material = pointcloud.originalMaterial;
 			}

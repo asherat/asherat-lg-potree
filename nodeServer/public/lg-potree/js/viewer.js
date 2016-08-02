@@ -475,7 +475,7 @@ function getPath(onDone){
 		      console.log('Client has connected to the server!');
 		      CPManager.emit('getJSONfile');
 		    });
-		    CPManager.on('changeCPData',function(data) {
+		    CPManager.on('refresh',function() {
 		    	console.log("REFRESH");
 			     window.location.reload(true); 
 		    });
@@ -486,7 +486,7 @@ function getPath(onDone){
 		    });
 				
 		   	CPManager.on('sendJSONfile', function(data, callback){
-		   		console.debug("New Cloud Point:", data);
+		   		console.debug("New Point Cloud:", data);
 		   		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
 		   		onDone(current_pointcloudPath);
 		   	});
