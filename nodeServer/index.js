@@ -113,7 +113,7 @@ module.exports.main = function() {
   var multiaxis = MultiAxis.relay( io, config.udp_port, config.hyperlapse_delay ); // Alf
 
   var fps = FPS.relay( io, config); //asherat
-  var cpManager = CloudPointManager.relay( io, config.cloudPoint); //asherat
+  var cpManager = CloudPointManager.relay( io, config.PointCloud); //asherat
 
 
 } // exports.main

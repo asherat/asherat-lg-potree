@@ -56,9 +56,6 @@ function showAndHideStatus() {
   window.setTimeout('document.getElementById("status").style.opacity = 0;', 5000);
 }
 
-
-
-
 function initPeruse() {
   var myIp = document.getElementById('myIP').value;
   var myPort = document.getElementById('myPORT').value;
@@ -66,18 +63,17 @@ function initPeruse() {
   showAndHideStatus();
 }
 
-
 function openManager(){
-  var myIP = document.getElementById('myIP').value;
+  var myIP = window.location.host;
+  //var myIp = document.getElementById('myIP').value;
   var myPORT = document.getElementById('myPORT').value;
-
   var url = 'http://' + myIP +':'+ myPORT +'/lg-potree/manager';
   var win = window.open(url, '_blank');
   win.focus();
 }
 
 function RefreshBrowsers() {
-  var myIp = document.getElementById('myIP').value;  
+  var myIp = document.getElementById('myIP').value;
   submitRequest('change.php?refresh=' + myIp);
   showAndHideStatus();
 }
@@ -86,3 +82,11 @@ function stopAll() {
   submitRequest('change.php?stop=' + myIp);
   showAndHideStatus();
 }
+
+function toolRequest(query) {
+  var myIp = document.getElementById('myIP').value;
+  submitRequest('change.php?tool=' + query + '&IP=' + myIp);
+  showAndHideStatus();
+}
+
+
