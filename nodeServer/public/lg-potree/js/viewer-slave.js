@@ -62,6 +62,7 @@ var directionalLight;
 var showStats = false;
 var showBoundingBox = false;
 var freeze = false;
+var showGrid;
 
 var progressBar = new ProgressBar();
 var snControls;
@@ -127,36 +128,56 @@ function setMaterial(value){
 	}
 };
 
-var CPManager;
-function getPath(onDone){
-		if(CPManager === undefined){
-		    // Create SocketIO instance, connect
-		    CPManager = io.connect('/manager');
+// Create SocketIO instance, connect
+var CPManager = io.connect('/manager');
 
-		    // Add a connect listener
-		    CPManager.on('connect',function() {
-		      console.log('Client has connected to the server!');
-		      CPManager.emit('getJSONfile');
-		    });
-		    CPManager.on('changeCPData',function(data) {
-		    	console.log("REFRESH");
-			     window.location.reload(true); 
-		    });
+// Add a connect listener
+CPManager.on('connect', function() {
+	console.log('Client has connected to the server!');
+	CPManager.emit('getJSONfile');
+});
+CPManager.on('refresh', function() {
+	console.log("REFRESH");
+     window.location.reload(true); 
+});
 
-		    // Add a disconnect listener
-		    CPManager.on('disconnect',function() {
-		      console.log('The client has disconnected!');
-		    });
-				
-		   	CPManager.on('sendJSONfile', function(data, callback){
-		   		console.debug("New Cloud Point:", data);
-		   		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
-		   		onDone(current_pointcloudPath);
-		   	});
-   	}
+// Add a disconnect listener
+CPManager.on('disconnect', function() {
+	console.log('The client has disconnected!');
+});
+	
+CPManager.on('sendJSONfile', function(data, callback){
+	console.debug("New Point Cloud:", data);
+	pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
+	loadnewpointcloud();
+});
+var referenceFrame = new THREE.Object3D();
+function getPath(){loadnewpointcloud();}
+function loadnewpointcloud(){
+	if(pointcloudPath.indexOf("cloud.js") > 0){
+		Potree.POCLoader.load(pointcloudPath, function(geometry){
+			pointcloud = new Potree.PointCloudOctree(geometry);
+			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			pointcloud.material.size = pointSize;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
+			
+			referenceFrame.add(pointcloud);
+			
+			//referenceFrame.updateMatrixWorld(true);
+			//var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+			
+			//referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+			//referenceFrame.updateMatrixWorld(true);
+	
+			if(firstFlipYZ)
+				flipYZ();
+			
+			});
+	}
 }
-function initGUI(){	}
-var showSkybox = false;
+
+
+var showSkybox;
 var snControls;
 
  var PotreeRenderer = function(){
@@ -208,4 +229,5 @@ var snControls;
 var potreeRenderer = new PotreeRenderer();
 
 THREE.lg_init('appname', undefined, undefined, undefined, undefined, false)
-initGUI();
+function initGUI(){}
+

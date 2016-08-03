@@ -116,7 +116,7 @@ var relay = function( io, port, hyperlapse_delay ) {
     var ev = navstate.InputEvent( buf );
 	if (ev.code == 256) bLeft = (ev.value == 1);
 	if (ev.code == 257) bRight = (ev.value == 1);
-    console.log( ev );
+    //console.log( ev );
 	if (bRight && bLeft)
 	io.of('/multiaxis').emit( 'reset' );
   });

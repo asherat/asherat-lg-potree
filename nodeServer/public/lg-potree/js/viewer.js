@@ -48,6 +48,7 @@ var stats;
 var clock = new THREE.Clock();
 var showSkybox = false;
 var referenceFrame;
+var showGrid = false;
 
 var CPManager;
 var pointcloudPath; // = sceneProperties.path;
@@ -169,8 +170,6 @@ var preRenderMaster = function () {
 
 var preRenderSlave = function (a) {
 	var yawOffset;
-	
-	
 	var oParametre = {};
 
 	if (window.location.search.length > 1) {
@@ -180,9 +179,9 @@ var preRenderSlave = function (a) {
 		}
 	}
 	if(oParametre.yawOffset)
-	yawOffset = oParametre.yawOffset;
+		yawOffset = oParametre.yawOffset;
 	else
-	yawOffset = 1;
+		yawOffset = 1;
 
 	//console.log(JSON.stringify(a));
 	camera.position.copy(a.position);
@@ -245,6 +244,7 @@ var preRenderSlave = function (a) {
 
 		if(a.flipYZ != isFlipYZ)
 			flipYZ();
+
 	}
 };
 
@@ -471,25 +471,25 @@ function getPath(onDone){
 		    CPManager = io.connect('/manager');
 
 		    // Add a connect listener
-		    CPManager.on('connect',function() {
+		    CPManager.on('connect', function() {
 		      console.log('Client has connected to the server!');
 		      CPManager.emit('getJSONfile');
 		    });
-		    CPManager.on('refresh',function() {
+		    CPManager.on('refresh', function() {
 		    	console.log("REFRESH");
 			     window.location.reload(true); 
 		    });
 
 		    // Add a disconnect listener
-		    CPManager.on('disconnect',function() {
+		    CPManager.on('disconnect', function() {
 		      console.log('The client has disconnected!');
 		    });
 				
-		   	CPManager.on('sendJSONfile', function(data, callback){
-		   		console.debug("New Point Cloud:", data);
-		   		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
-		   		onDone(current_pointcloudPath);
-		   	});
+	   	CPManager.on('sendJSONfile', function(data, callback){
+	   		console.debug("New Point Cloud:", data);
+	   		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
+	   		onDone(current_pointcloudPath);
+	   	});
    	}
 }
 
@@ -511,7 +511,6 @@ var initThree = function (){
 	
 	referenceFrame = new THREE.Object3D();
 	scenePointCloud.add(referenceFrame);
-
 	renderer = new THREE.WebGLRenderer();
 	renderer.setSize(width, height);
 	renderer.autoClear = false;
@@ -523,8 +522,8 @@ var initThree = function (){
 		flipYZ();
 	}
 	else
-	elRenderArea.appendChild(renderer.domElement);
-	
+		elRenderArea.appendChild(renderer.domElement);
+
 	skybox = Potree.utils.loadSkybox("resources/textures/skybox/");
 
 	// camera and controls
@@ -537,13 +536,12 @@ var initThree = function (){
 	// enable frag_depth extension for the interpolation shader, if available
 	renderer.context.getExtension("EXT_frag_depth");
 
+	THREELG.pointcloudPath = pointcloudPath;
 	// load pointcloud
 	getPath(function(pointcloudPath){ 
-
 		if(pointcloudPath.indexOf("cloud.js") > 0){
 			Potree.POCLoader.load(pointcloudPath, function(geometry){
 				pointcloud = new Potree.PointCloudOctree(geometry);
-				
 				pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 				pointcloud.material.size = pointSize;
 				pointcloud.visiblePointsTarget = pointCountTarget * 1000.00 * 1000.00;
@@ -572,65 +570,20 @@ var initThree = function (){
 				flipYZ();
 				camera.zoomTo(pointcloud, 1);
 				
-
+				if(controls){
+					controls.enabled = false;
+				}
 				useSpacenavControls();
-
+				
 				initGUI();	
-				/*
-				if(sceneProperties.cameraPosition != null){
-					var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
-					camera.position.copy(cp);
-				}
-				
-				if(sceneProperties.cameraRotation != null){
-					var ct = new THREE.Vector3(sceneProperties.cameraRotation[0], sceneProperties.cameraRotation[1]);
-					camera.lookAt(ct);
-
-				}*/
-				
-			});
-		}else if(pointcloudPath.indexOf(".vpc") > 0){
-			Potree.PointCloudArena4DGeometry.load(pointcloudPath, function(geometry){
-				pointcloud = new Potree.PointCloudArena4D(geometry);
-				pointcloud.visiblePointsTarget = 500*1000;
-				
-				referenceFrame.add(pointcloud);
-				
-				if(firstFlipYZ)
-				flipYZ();
-				
-				referenceFrame.updateMatrixWorld(true);
-				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-				
-				referenceFrame.position.sub(sg.center);
-				referenceFrame.position.y += sg.radius / 2;
-				referenceFrame.updateMatrixWorld(true);
-				
-				camera.zoomTo(pointcloud, 1);
-
-				useSpacenavControls();
-
-				initGUI();
-				
-				pointcloud.material.interpolation = false;
-				pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-				/*
-				if(sceneProperties.cameraPosition != null){
-					var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
-					camera.position.copy(cp);
-				}
-				
-				if(sceneProperties.cameraTarget != null){
-					var ct = new THREE.Vector3(sceneProperties.cameraTarget[0], sceneProperties.cameraTarget[1], sceneProperties.cameraTarget[2]);
-					camera.lookAt(ct);
-				}*/
 				
 			});
 		}
 	});
 	
 	var grid = Potree.utils.createGrid(5, 5, 2);
-	scene.add(grid);
+	if(showGrid)
+		scene.add(grid);
 	
 	var texture = Potree.utils.createBackgroundTexture(512, 512);
 	
@@ -647,8 +600,6 @@ var initThree = function (){
 	bg.material.depthTest = false;
 	bg.material.depthWrite = false;
 	sceneBG.add(bg);			
-	
-	//window.addEventListener( 'keydown', onKeyDown, false );
 	
 	directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 	directionalLight.position.set( 10, 10, 10 );
@@ -732,6 +683,7 @@ function useSpacenavControls(){
 	
 	
 }
+
 
 
 var PotreeRenderer = function(){
@@ -1115,7 +1067,6 @@ render = function (initialScene) {
 	var pointcloud = referenceFrame.children[0];
 
 	if(pointcloud){
-		
 		var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 		
 		if(!this.intensityMax){
@@ -1228,7 +1179,6 @@ THREE.lg_init('appname', preRenderMaster, preRenderSlave, initThree, render, tru
 a = initThree();
 scene = a.scene;
 camera = a.camera;
-
 render();
 
 

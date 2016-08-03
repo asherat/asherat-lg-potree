@@ -1,0 +1,3 @@
+killall -q node; killall -q nodejs; killall -q spacenav-emitter; killall -q chromium-browser
+
+remote_cmd=''

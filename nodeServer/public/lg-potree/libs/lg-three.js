@@ -31,12 +31,11 @@ VIEWSYNC.Connection = function(appname, master, url) {
     if (master) {
         switch (pov.type) { 
             case 'request-initialization':
-                //sendInitialization();
+                sendInitialization();
                 break;
         }
     }
     else {
-	console.log(THREELG);
         switch (pov.type) {
             case 'initialization':
                 THREELG.prerenderSlave = eval("(" + pov.prerenderSlave + ")");

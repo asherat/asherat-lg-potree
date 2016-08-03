@@ -14,7 +14,7 @@ function CPMRelay( io, cpfile) {
 	socket.on('changeData', function (data) { 
     		console.log("Changing Point Cloud Data: ", data); 
 		cpfile = data;
-    		socket.emit('refresh');
+    		//socket.emit('refresh');
     		socket.broadcast.emit('refresh');
     		
     	});
