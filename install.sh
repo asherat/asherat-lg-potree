@@ -68,6 +68,6 @@ else
   $lg_user=$3;
   $lg_password=$4;
 fi
-sshpass -p $lg_password ssh-copy-id $lg_user@$lg_IP;
+sshpass -p $lg_password ssh-copy-id $lg_user@$lg_IP >> $log_file;
 
 echo "Completed Installation, you can check the log file at $log_file";
