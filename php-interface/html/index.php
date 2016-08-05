@@ -13,14 +13,14 @@
 			<h1>Point Cloud Viewer for Liquid Galaxy</h1>
 			<li>
 				<h5>Please, fill in the IP and ports BEFORE initializing the Node.js server or connecting the SpaceNavigator</h5>
-				<label for="myIP"> Liquid Galaxy IP </label>
-				<input type="text"  id = "myIP" value="10.160.101.46">
+				<label for="lgIP"> Liquid Galaxy IP </label>
+				<input type="text"  id = "lgIP" value="<?php echo implode(".", array_slice(explode(".", $_SERVER["SERVER_ADDR"]), 0, 3)).'.';  ?>" >
 			</li>
 			<li>
-				<label> NodeJS IP </label>
-				<input type="text" value=<?php echo $_SERVER["SERVER_NAME"] ?> disabled>
-				<label for="myPORT"> Port </label>
-				<input type="text"  id = "myPORT" value="8086">
+				<label for="nodeIP" > NodeJS IP </label>
+				<input type="text" id ="nodeIP" value="<?php echo $_SERVER["SERVER_ADDR"] ?> " disabled>
+				<label for="nodePort"> Port </label>
+				<input type="text"  id = "nodePort" value="8086">
 			</li>
 
 

@@ -57,35 +57,37 @@ function showAndHideStatus() {
 }
 
 function initPeruse() {
-  var myIp = document.getElementById('myIP').value;
-  var myPort = document.getElementById('myPORT').value;
-  submitRequest('change.php?initPeruse=' + myIp + '&port=' + myPort);
+  var lgIP = document.getElementById('lgIP').value;
+  var nodeIP = document.getElementById('nodeIP').value;
+  var nodePort = document.getElementById('nodePort').value;
+console.log("VARS", lgIP, nodeIP, nodePort);
+  submitRequest('change.php?initPeruse=' + lgIP + '&nodeIP='+ nodeIP + '&nodePort=' + nodePort);
   showAndHideStatus();
 }
 
 function openManager(){
-  var myIP = window.location.host;
-  //var myIp = document.getElementById('myIP').value;
-  var myPORT = document.getElementById('myPORT').value;
-  var url = 'http://' + myIP +':'+ myPORT +'/lg-potree/manager';
+  var lgIP = window.location.host;
+  //var lgIP = document.getElementById('lgIP').value;
+  var nodePort = document.getElementById('nodePort').value;
+  var url = 'http://' + lgIP +':'+ nodePort +'/lg-potree/manager';
   var win = window.open(url, '_blank');
   win.focus();
 }
 
 function RefreshBrowsers() {
-  var myIp = document.getElementById('myIP').value;
-  submitRequest('change.php?refresh=' + myIp);
+  var lgIP = document.getElementById('lgIP').value;
+  submitRequest('change.php?refresh=' + lgIP);
   showAndHideStatus();
 }
 function stopAll() {
-  var myIp = document.getElementById('myIP').value;  
-  submitRequest('change.php?stop=' + myIp);
+  var lgIP = document.getElementById('lgIP').value;  
+  submitRequest('change.php?stop=' + lgIP);
   showAndHideStatus();
 }
 
 function toolRequest(query) {
-  var myIp = document.getElementById('myIP').value;
-  submitRequest('change.php?tool=' + query + '&IP=' + myIp);
+  var lgIP = document.getElementById('lgIP').value;
+  submitRequest('change.php?tool=' + query + '&lgIP=' + lgIP);
   showAndHideStatus();
 }
 

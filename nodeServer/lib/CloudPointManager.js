@@ -3,9 +3,7 @@ var path = require('path');
 
 function CPMRelay( io, cpfile) {
   var cpManager = io
-    // only listen on the fps namespace
     .of('/manager')
-
     .on('connection', function (socket) {
 	socket.on('refresh', function () {
         	socket.emit('refresh');
@@ -36,9 +34,26 @@ function CPMRelay( io, cpfile) {
 		}
 
 	});
-      socket.on('getJSONfile', function(){
-        socket.emit('sendJSONfile', cpfile);
-      });
+	socket.on('getJSONfile', function(){
+		socket.emit('sendJSONfile', cpfile);
+	});
+	//Manager wants the Args status from master
+	socket.on('getArgsStatus', function(){
+		socket.broadcast.emit('queryArgs');
+	});
+	//Master sends the Args status
+	socket.on('queryArgs', function(data){
+		socket.broadcast.emit('getArgsStatus', data);
+	});
+	socket.on('queryArgs2', function(data){
+		socket.broadcast.emit('getArgsStatus2', data);
+	});
+
+	//The manager sends new Args
+	socket.on('newArgs', function(data){
+		socket.broadcast.emit('updateArgs', data);
+	});
+
     });
 
   return {
@@ -50,4 +65,6 @@ function CPMRelay( io, cpfile) {
 
 
 module.exports.relay = CPMRelay;
+
+
 

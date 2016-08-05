@@ -15,30 +15,44 @@
 
 . lg-potree-stop
 
-peruse_IP=$1
-peruse_Port=$2
-remote_IP=$3
+remote_IP=$1
+peruse_IP=$2
+peruse_Port=$3
+remote_user=$4
 
 device_id='/dev/input/spacenavigator'
 
- nodeServerPath='$HOME/asherat666-peruse-a-rue/bin/peruse-a-rue';
- controllerPath='$HOME/asherat666-peruse-a-rue/spacenav-emitter /dev/input/spacenavigator 127.0.0.1 '$peruse_Port;
- 
- 
-#Run chromiums
-remote_cmd='. ${HOME}/etc/shell.conf
-		for lg in $LG_FRAMES ; do
-			frame=$(($(echo $lg | cut -c 3)-1));
-			if [[ ${frame} -gt $(( ${LG_FRAMES_MAX}/2 )) ]]; then
-				frame="$(( ${frame} - ${LG_FRAMES_MAX} ))";
-			fi
-			CMD="killall chromium-browser; export DISPLAY=:0.0 && chromium-browser '$peruse_IP':'$peruse_Port'/lg-potree/"
-			if [[ $frame -ne 0 ]] ; then
-				CMD=$CMD"slave.html?yawOffset="$frame;
-			fi
-			ssh -x lg@$lg "$CMD" &
-		done';
+killall node nodejs spacenav-emitter;
 
-exec $nodeServerPath &
-exec $controllerPath &
+echo "Opening lg-potree on $peruse_IP":"$peruse_Port"
+${HOME}/asherat666-peruse-a-rue/bin/peruse-a-rue &
+${HOME}/asherat666-peruse-a-rue/bin/spacenav-emitter 127.0.0.1 $peruse_Port &
+
+
+#Run chromiums
+remote_cmd='. ${HOME}/etc/shell.conf;
+
+lg-ctl-master;
+
+for lg in $LG_FRAMES ; do
+	frame=$(($(echo $lg | cut -c 3)-1));
+
+	if [[ ${frame} -gt $(( ${LG_FRAMES_MAX}/2 )) ]] ; then
+	    frame=$(( ${frame} - ${LG_FRAMES_MAX} ));
+	fi
+
+	CMD0="killall chromium-browser; export DISPLAY=:0 && chromium-browser '$peruse_IP':'$peruse_Port'/lg-potree/";
+	if [[ $frame -eq 0 ]]
+	then
+		CMD=$CMD0;
+	else
+
+		CMD=$CMD0"slave.html?yawOffset="$frame;
+	fi
+
+	ssh -x '$remote_user'@$lg $CMD &	
+
+done
+';
+
 ssh -x lg@$remote_IP "$remote_cmd" &

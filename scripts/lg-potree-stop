@@ -1,3 +1,10 @@
-killall -q node; killall -q nodejs; killall -q spacenav-emitter; killall -q chromium-browser
+#!/bin/bash
 
-remote_cmd=''
+remote_IP=$1
+remote_user=$2
+
+killall -q node nodejs spacenav-emitter chromium-browser;
+
+remote_cmd='$HOME/bin/lg-run "killall chromium-browser"'
+
+ssh -x $remote_user@$remote_IP $remote_cmd
