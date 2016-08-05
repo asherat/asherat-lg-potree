@@ -35,7 +35,7 @@ echo "COMPLETED";
 exit
 #Compile the spacenav-emitter driver
 echo -ne "\nCompiling controller driver ... ";
-gcc -m32 -o nodeServer/spacenav-emitter nodeServerh/spacenav-emitter.c >> $log_file 2>&1 && \
+gcc -m32 -o nodeServer/bin/spacenav-emitter nodeServer/spacenav-emitter.c >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Moving php-interface to apache
