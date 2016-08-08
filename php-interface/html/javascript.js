@@ -65,6 +65,15 @@ console.log("VARS", lgIP, nodeIP, nodePort);
   showAndHideStatus();
 }
 
+function openLibrary(){
+  var lgIP = window.location.host;
+  //var lgIP = document.getElementById('lgIP').value;
+  var nodePort = document.getElementById('nodePort').value;
+  var url = 'http://' + lgIP +':'+ nodePort +'/lg-potree/library';
+  var win = window.open(url, '_blank');
+  win.focus();
+}
+
 function openManager(){
   var lgIP = window.location.host;
   //var lgIP = document.getElementById('lgIP').value;

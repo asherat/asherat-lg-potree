@@ -20,18 +20,13 @@ CPManager.on( 'CPDir', function( data ) {
 	var content = $( "#cpFiles" ).html();
 	for (i = 0; i < data.length; i++) { 
 		var newMsgContent = '<li><img src="../resources/pointclouds/' + data[i] + '/preview.png"' +
-		'onerror="this.onerror=null;this.src=\'../resources/images/logo_black.png\';" ' +
+		'onerror="this.onerror=null;this.src=\'../resources/images/logo.png\';" ' +
 		'onclick="sendMessageToServer(\'' + data[i] + '\')" />' +
-		'<h3>'+ data[i] +'</h3>'+
-		'<div><img src="../resources/images/edit.png" onclick="editPC(\''+data[i]+'\')"/>'+
-		'<img src="../resources/images/delete.png" onclick="deletePC(\''+data[i]+'\')"/>'+
-		'</li>';
+		'<h3>'+ data[i] +'</h3></li>';
 
 		content = content + newMsgContent; 
 
 	}
-	var lastContent = '<li id="addbutton"><img src="../resources/images/add.png" onclick="newPC()"/> </li>';
-	content = content + lastContent;
 	$( "#cpFiles" ).html( content );
 });
 
@@ -39,7 +34,15 @@ CPManager.on( 'error', function( err ) {
 	console.error("FOUND ERROR", err);
 });
 
-
+CPManager.on('getArgsStatus', function( data ){
+		changeArgs = data;
+		waiting1 = false;
+	});
+CPManager.on('getArgsStatus2', function( data ){
+	
+		guiArgs = data;
+		waiting2 = false;
+	});
 // Sends a message to the server via sockets
 function sendMessageToServer(message) {
 	CPManager.emit('changeData',message);

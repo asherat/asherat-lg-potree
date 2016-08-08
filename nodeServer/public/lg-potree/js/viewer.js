@@ -22,7 +22,7 @@ var minNodeSize = 100;
 var directionalLight;
 
 
-var firstFlipYZ = sceneProperties.flipYZ;
+var firstFlipYZ = false;
 var showStats = false;
 var showBoundingBox = false;
 var freeze = false;
@@ -50,7 +50,56 @@ var showSkybox = false;
 var referenceFrame;
 var showGrid = false;
 
-var CPManager;
+	setPointSizeType(sceneProperties.sizeType);
+	setQuality(sceneProperties.quality);
+	setMaterial(sceneProperties.material);
+
+var CPManager = io.connect('/manager');
+// Add a connect listener
+CPManager.on('connect', function() {
+	CPManager.emit('getJSONfile');
+});
+
+CPManager.on('refresh', function() {
+	console.log("REFRESH");
+	window.location.reload(true); 
+});
+// Add a disconnect listener
+CPManager.on('disconnect', function() {
+	console.log('The client has disconnected!');
+});
+
+CPManager.on('queryArgs', function() {
+	CPManager.emit('queryArgs', changeArgs);
+	CPManager.emit('queryArgs2', guiArgs);
+});
+CPManager.on('updateArgs', function(data) {
+	//Appearance
+	pPoints.setValue(data.points);
+	pPointSize.setValue(data.pointSize);
+	pFOV.setValue(data.FOV);
+	pOpacity.setValue(data.opacity);
+	pSizeType.setValue(data.sizeType);
+	pMaterial.setValue(data.material);
+	pQuality.setValue(data.quality);
+	//pEDL.setValue(data.EDL);
+	pFlipYZ.setValue(data.flipYZ);
+	pSkybox.setValue(data.skybox);
+	pSponsors.setValue(data.sponsors);
+
+	//Settings
+	pClipMode.setValue(data.ClipMode);
+	pDEMCollisions.setValue(data.useDEMCollisions);
+	pMinNodeSize.setValue(data.MinNodeSize);
+
+
+	//Debug
+	pStats.setValue(data.stats);
+	pBoundingBox.setValue(data.BoundingBox);
+	pFreeze.setValue(data.freeze);
+});
+
+
 var pointcloudPath; // = sceneProperties.path;
 function setPointSizeType(value){
 	if(value === "Fixed"){
@@ -116,19 +165,24 @@ var changeArgs     = {
 	rotation: null,
 	position: null,
 	"points": pointCountTarget,
-	"pointSize": pointSize,
+	"pointSize": pointSizeType,
 	"FOV": fov,
 	"opacity": opacity,
-	"sizeType": sceneProperties.sizeType,
-	"material": sceneProperties.material,
-	"quality": sceneProperties.quality,
+	"sizeType" : sceneProperties.sizeType,
+	"material" : sceneProperties.material,
+	"quality": quality,
 	"EDL": sceneProperties.useEDL,
+	"flipYZ": true,
 	"skybox": showSkybox,
+	"sponsors": true, //new
+
+	"ClipMode": "Highlight Inside", //new
+	"DEMCollisions": useDEMCollisions, //new
 	"MinNodeSize": minNodeSize,
-	"stats": showStats,
+
+	"stats": showStats, 
 	"BoundingBox": showBoundingBox,
 	"freeze": freeze,
-	"flipYZ": false,
 
 };
 var lastChangeArgs = {
@@ -136,6 +190,13 @@ var lastChangeArgs = {
 	position: null,
 
 };
+
+var guiArgs = {
+	options : [ "RGB" ],
+	qualityOptions : [ "Squares", "Circles" ],
+	isEDLenabled : false,
+}
+
 var guiChanged = false;
 var preRenderMaster = function () {
 	// Send a packet to the slave if:
@@ -164,8 +225,18 @@ var preRenderMaster = function () {
 		lastChangeArgs.rotation = changeArgs.rotation;	
 	}
 
+	if(changeArgs.skipSlaveRender === undefined){
+		CPManager.emit('masterArgs',"ALGO");
+	}
+
 	return changeArgs;
 };
+
+
+
+
+
+
 
 
 var preRenderSlave = function (a) {
@@ -189,6 +260,7 @@ var preRenderSlave = function (a) {
 	camera.rotateOnAxis((new THREE.Vector3(0, -1, 0)), yawOffset*rotationAngle*Math.PI/180);
 
 	if(pointcloud !== undefined){
+
 		pointCountTarget = a.points;
 		pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 
@@ -197,7 +269,7 @@ var preRenderSlave = function (a) {
 
 		fov = a.FOV;
 
-		pointcloud.material.opacity = a.opacity;
+		opacity = a.opacity;
 		
 		setPointSizeType(a.sizeType);
 		pointcloud.material.pointSizeType = pointSizeType;
@@ -213,6 +285,11 @@ var preRenderSlave = function (a) {
 
 		showSkybox = a.skybox;
 
+//TODO
+		sponsors = a.sponsors;
+
+		clipPmode = a.ClipMode;
+		useDEMCollisions = a.DEMCollisions;
 		minNodeSize = a.MinNodeSize;
 
 		showStats = a.stats;
@@ -242,8 +319,9 @@ var preRenderSlave = function (a) {
 
 		freeze = a.freeze;
 
-		if(a.flipYZ != isFlipYZ)
+		if(a.flipYZ != isFlipYZ){
 			flipYZ();
+		}
 
 	}
 };
@@ -256,70 +334,65 @@ var changeEvent = function(event) {
 
 function initGUI(){
 
-	flipYZ();
-	flipYZ();
-	setPointSizeType(sceneProperties.sizeType);
-	setQuality(sceneProperties.quality);
-	setMaterial(sceneProperties.material);
-
 	gui = new dat.GUI({
 	});
 	
 	params = {
-		"points(m)": pointCountTarget,
-		"PointSize": pointSize,
-		"FOV": sceneProperties.fov,
-		"opacity": opacity,
-		"SizeType" : sceneProperties.sizeType,
-		"show octree" : false,
-		"Materials" : sceneProperties.material,
-		"Clip Mode": "Highlight Inside",
-		"quality": sceneProperties.quality,
-		"EDL": sceneProperties.useEDL,
-		"skybox": false,
-		"stats": showStats,
-		"BoundingBox": showBoundingBox,
-		"DEM Collisions": useDEMCollisions,
-		"MinNodeSize": minNodeSize,
-		"freeze": freeze,
-		"sponsors": sponsors,
-		"FlipYZ": firstFlipYZ
-	};
-	
+		"points(m)": changeArgs.points,
+		"PointSize": changeArgs.pointSize,
+		"FOV": changeArgs.FOV,
+		"opacity": changeArgs.opacity,
+		"SizeType" : changeArgs.sizeType,//pointSizeType,
+		"Materials" : changeArgs.material,
+		"quality": changeArgs.quality,
+		"EDL": changeArgs.EDL,
+		"FlipYZ": changeArgs.flipYZ,
+		"skybox": changeArgs.skybox,
+		"sponsors": changeArgs.sponsors,
+		
 
+		"Clip Mode": changeArgs.ClipMode,
+		"DEM Collisions": changeArgs.DEMCollisions,
+		"MinNodeSize": changeArgs.MinNodeSize,
+
+		"stats": changeArgs.stats,
+		"BoundingBox": changeArgs.BoundingBox,
+		"freeze": changeArgs.freeze
+
+	};
 	
 	var fAppearance = gui.addFolder('Appearance');
 	
-	var pPoints = fAppearance.add(params, 'points(m)', 0, 4);
+	pPoints = fAppearance.add(params, 'points(m)', 0, 4);
 	pPoints.onChange(function(value){
 		pointCountTarget = value;
 		changeArgs.points = value;
 		guiChanged = true;
 	});
 
-	var pPointSize = fAppearance.add(params, 'PointSize', 0, 3);
+	pPointSize = fAppearance.add(params, 'PointSize', 0, 3);
 	pPointSize.onChange(function(value){
 		pointSize = value;
 		changeArgs.pointSize = value;
 		guiChanged = true;
 	});
 	
-	var fFOV = fAppearance.add(params, 'FOV', 20, 100);
-	fFOV.onChange(function(value){
+	pFOV = fAppearance.add(params, 'FOV', 20, 100);
+	pFOV.onChange(function(value){
 		fov = value;
 		changeArgs.FOV = value;
 		guiChanged = true;
 
 	});
 	
-	var pOpacity = fAppearance.add(params, 'opacity', 0, 1);
+	pOpacity = fAppearance.add(params, 'opacity', 0, 1);
 	pOpacity.onChange(function(value){
 		opacity = value;
 		changeArgs.opacity = value;
 		guiChanged = true;
 	});
 	
-	var pSizeType = fAppearance.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
+	pSizeType = fAppearance.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
 	pSizeType.onChange(function(value){
 		setPointSizeType(value);
 		changeArgs.sizeType = value;
@@ -329,7 +402,7 @@ function initGUI(){
 
 
 	
-	var options = [];
+	options = [];
 	var attributes = pointcloud.pcoGeometry.pointAttributes;
 	if(attributes === "LAS" || attributes === "LAZ"){
 		options = [ 
@@ -358,14 +431,13 @@ function initGUI(){
 		options.push("Color");
 		options.push("Tree Depth");
 	}
-	
 	// default material is not available. set material to Elevation
 	if(options.indexOf(params.Materials) < 0){
-		console.error("Default Material '" + params.Material + "' is not available. Using RGB instead");
+		console.error("Default Material '" + params.Materials + "' is not available. Using RGB instead");
 		setMaterial("RGB");
 		params.Materials = "RGB";
 	}
-	
+	guiArgs.options = options;
 	pMaterial = fAppearance.add(params, 'Materials',options);
 	pMaterial.onChange(function(value){
 		setMaterial(value);
@@ -373,14 +445,15 @@ function initGUI(){
 		guiChanged = true;
 	});
 	
-	var qualityOptions = ["Squares", "Circles"];
+	qualityOptions = ["Squares", "Circles"];
 	if(Potree.Features.SHADER_INTERPOLATION.isSupported()){
 		qualityOptions.push("Interpolation");
 	}
 	if(Potree.Features.SHADER_SPLATS.isSupported()){
 		qualityOptions.push("Splats");
 	}
-	var pQuality = fAppearance.add(params, 'quality', qualityOptions);
+	guiArgs.qualityOptions = qualityOptions;
+	pQuality = fAppearance.add(params, 'quality', qualityOptions);
 	pQuality.onChange(function(value){
 		quality = value;
 		changeArgs.quality = value;
@@ -388,44 +461,53 @@ function initGUI(){
 	});
 	
 	if(Potree.Features.SHADER_EDL.isSupported()){
-		var pEDL = fAppearance.add(params, 'EDL');
+		pEDL = fAppearance.add(params, 'EDL');
 		pEDL.onChange(function(value){
 			sceneProperties.useEDL = value;
 		});
+		guiArgs.isEDLenabled = true;
+	}else{
+		guiArgs.isEDLenabled = false;
 	}
 	
-	var pFlipYZ = fAppearance.add(params, 'FlipYZ');
+	pFlipYZ = fAppearance.add(params, 'FlipYZ');
 	pFlipYZ.onChange(function(value){
-		flipYZ();
+		if(value != isFlipYZ)		
+			flipYZ();
 		guiChanged = true;
 	});
 
-	var pSykbox = fAppearance.add(params, 'skybox');
-	pSykbox.onChange(function(value){
+	pSkybox = fAppearance.add(params, 'skybox').listen();
+	pSkybox.onChange(function(value){
 		showSkybox = value;
-		changeArgs.flipYZ = value;
+		changeArgs.skybox = value;
 		guiChanged = true;
 	});
+
 	
-	var pSponsors = fAppearance.add(params, 'sponsors');
+	pSponsors = fAppearance.add(params, 'sponsors');
 	pSponsors.onChange(function(value){
 		sponsors = value;
+		changeArgs.sponsors = value;
+		guiChanged = true;
 	});
 	var fSettings = gui.addFolder('Settings');
 	
-	var pClipMode = fSettings.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
+	pClipMode = fSettings.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
 	pClipMode.onChange(function(value){
 		setClipMode(value);
-		changeArgs.clipMode = value;
+		changeArgs.ClipMode = value;
 		guiChanged = true;
 	});
 	
-	var pDEMCollisions = fSettings.add(params, 'DEM Collisions');
+	pDEMCollisions = fSettings.add(params, 'DEM Collisions');
 	pDEMCollisions.onChange(function(value){
 		useDEMCollisions = value;
+		changeArgs.DEMCollisions = value;
+		guiChanged = true;
 	});
 	
-	var pMinNodeSize = fSettings.add(params, 'MinNodeSize', 0, 1500);
+	pMinNodeSize = fSettings.add(params, 'MinNodeSize', 0, 1500);
 	pMinNodeSize.onChange(function(value){
 		minNodeSize = value;
 		changeArgs.MinNodeSize = value;
@@ -438,21 +520,21 @@ function initGUI(){
 	var fDebug = gui.addFolder('Debug');
 
 	
-	var pStats = fDebug.add(params, 'stats');
+	pStats = fDebug.add(params, 'stats');
 	pStats.onChange(function(value){
 		showStats = value;
 		changeArgs.stats = value;
 		guiChanged = true;
 	});
 	
-	var pBoundingBox = fDebug.add(params, 'BoundingBox');
+	pBoundingBox = fDebug.add(params, 'BoundingBox');
 	pBoundingBox.onChange(function(value){
 		showBoundingBox = value;
 		changeArgs.BoundingBox = value;
 		guiChanged = true;
 	});
 	
-	var pFreeze = fDebug.add(params, 'freeze');
+	pFreeze = fDebug.add(params, 'freeze');
 	pFreeze.onChange(function(value){
 		freeze = value;
 		changeArgs.freeze = value;
@@ -462,35 +544,14 @@ function initGUI(){
 	// stats
 	stats = new Stats();
 	document.getElementById("logo").appendChild( stats.domElement );
-	
-
 }
 function getPath(onDone){
-		if(CPManager === undefined){
-		    // Create SocketIO instance, connect
-		    CPManager = io.connect('/manager');
-
-		    // Add a connect listener
-		    CPManager.on('connect', function() {
-		      console.log('Client has connected to the server!');
-		      CPManager.emit('getJSONfile');
-		    });
-		    CPManager.on('refresh', function() {
-		    	console.log("REFRESH");
-			     window.location.reload(true); 
-		    });
-
-		    // Add a disconnect listener
-		    CPManager.on('disconnect', function() {
-		      console.log('The client has disconnected!');
-		    });
-				
-	   	CPManager.on('sendJSONfile', function(data, callback){
-	   		console.debug("New Point Cloud:", data);
-	   		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
-	   		onDone(current_pointcloudPath);
-	   	});
-   	}
+	CPManager.on('sendJSONfile', function(data, callback){
+		console.debug("New Point Cloud:", data);
+		var current_pointcloudPath = "resources/pointclouds/"+data+"/cloud.js";
+		THREELG.pointCloudPath = current_pointcloudPath;
+		onDone(current_pointcloudPath);
+	});
 }
 
 var initThree = function (){
@@ -518,8 +579,6 @@ var initThree = function (){
 	
 	if(elRenderArea.firstChild){
 		elRenderArea.replaceChild(renderer.domElement, elRenderArea.firstChild);
-		if(firstFlipYZ)
-		flipYZ();
 	}
 	else
 		elRenderArea.appendChild(renderer.domElement);
@@ -536,9 +595,10 @@ var initThree = function (){
 	// enable frag_depth extension for the interpolation shader, if available
 	renderer.context.getExtension("EXT_frag_depth");
 
-	THREELG.pointcloudPath = pointcloudPath;
+	THREELG.pointcloudPath = pointcloudPath;	
 	// load pointcloud
 	getPath(function(pointcloudPath){ 
+
 		if(pointcloudPath.indexOf("cloud.js") > 0){
 			Potree.POCLoader.load(pointcloudPath, function(geometry){
 				pointcloud = new Potree.PointCloudOctree(geometry);
@@ -566,9 +626,9 @@ var initThree = function (){
 					camera.near = 0.1;
 				}
 
-				if(firstFlipYZ)
 				flipYZ();
-				camera.zoomTo(pointcloud, 1);
+				if(firstFlipYZ)
+					flipYZ();
 				
 				if(controls){
 					controls.enabled = false;
@@ -576,7 +636,9 @@ var initThree = function (){
 				useSpacenavControls();
 				
 				initGUI();	
-				
+				camera.zoomTo(pointcloud, 0);
+
+
 			});
 		}
 	});
@@ -617,6 +679,7 @@ var initThree = function (){
 
 
 function flipYZ(){
+
 	isFlipYZ = !isFlipYZ;
 	changeArgs.flipYZ = isFlipYZ;
 	
@@ -1171,6 +1234,13 @@ render = function (initialScene) {
 	}else{
 		potreeRenderer.render();
 	}
+
+
+
+
+
+
+
 };
 
 
@@ -1179,6 +1249,7 @@ THREE.lg_init('appname', preRenderMaster, preRenderSlave, initThree, render, tru
 a = initThree();
 scene = a.scene;
 camera = a.camera;
+
 render();
 
 

@@ -3,22 +3,29 @@
 	<head>
 		<script src="../libs/jquery/jquery-1.12.4.min.js"></script>
 		<script src="../libs/socket.io/socket.io.min.js"></script>
+		<script src="../libs/other/dat.gui.min.js"></script>
 		<script type="text/javascript" src="javascript.js"></script> 
-		<script src="manager.js"></script>
+		<script src="library.js"></script>
 		<link rel="stylesheet" type="text/css" href="style.css" />
+		<link rel="stylesheet" type="text/css" href="dat-gui-swec.css" />
 
-
-		<title>LG-Potree Manager</title>
+		<title>LG-Potree Library</title>
 	</head>
 	<nav>
 		<ul>
-			<h1>LG-Potree Manager</h1>
+			<h1>LG-Potree Library</h1>
 				<ul id="cpFiles">
 					<h1 href="#" >Cloud Point Models</h1>
 				</ul>
+			</br>
+			</br>
+			<li><a href="#" onclick="RefreshBrowsers();">Refresh Browsers</a></li>
 		</ul>
 	</nav>
 	<body>
+		<div>
+				
+		</div>	
 		<div class="touchscreen">
 			<div id="status"></div>
 		</div>

@@ -27,8 +27,9 @@
 			<li><a href="#" onclick="initPeruse()">Initialize LG-Potree </a></li>
 
 			<li><a href="#" onclick="RefreshBrowsers()">Refresh Browsers</a></li>
-			<li><a href="#" onclick="openManager()">Point Cloud Manager</a></li>
+			<li><a href="#" onclick="openLibrary()">Point Cloud Library</a></li>
 			<br>
+			<li><a href="#" onclick="openManager()">Point Cloud Manager</a></li>
 			<br>
 			<li><a rel="external" href="https://github.com/LiquidGalaxyLAB/asherat666-lg-potree/wiki">LG-Potree Wiki</a></li>
 			<li><a href="#" onclick="stopAll()">Close LG-Potree</a></li>

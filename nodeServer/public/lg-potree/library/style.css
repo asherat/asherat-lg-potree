@@ -77,15 +77,9 @@ nav ul li a:hover {
 	background-color : #fdcc9b
 }
 
-#cpfiles img{
+#cpfiles img, #cpfiles li object{
 	width: 200px;
 	height: auto;
-	vertical-align: middle;
-}
-
-#cpfiles div img{
-	height: 30px;
-	width: auto;
 }
 
 #cpfiles ul{
@@ -103,7 +97,4 @@ nav ul li a:hover {
 }
 
 
-#addbutton img{
-	width:100px;
-	vertical-align: middle;
-}
+
