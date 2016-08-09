@@ -54,6 +54,12 @@ function CPMRelay( io, cpfile) {
 		socket.broadcast.emit('updateArgs', data);
 	});
 
+	//The manager sends new Args
+	socket.on('addData', function(data){
+		console.log("HOLA", data);
+	});
+	
+	
     });
 
   return {

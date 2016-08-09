@@ -46,6 +46,3 @@ function submitRequest(url) {
   req.open('GET', url, true);
   req.send(null);
 }
-
-
-

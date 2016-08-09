@@ -1,11 +1,15 @@
 
 <html>
 	<head>
-		<script src="../libs/jquery/jquery-1.12.4.min.js"></script>
+		<!-- <script src="../libs/jquery/jquery-1.12.4.min.js"></script> -->
+		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
 		<script src="../libs/socket.io/socket.io.min.js"></script>
 		<script type="text/javascript" src="javascript.js"></script> 
 		<script src="manager.js"></script>
 		<link rel="stylesheet" type="text/css" href="style.css" />
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+
 
 
 		<title>LG-Potree Manager</title>
@@ -17,11 +21,48 @@
 					<h1 href="#" >Cloud Point Models</h1>
 				</ul>
 		</ul>
+		<div id="divTest1"></div>
+
 	</nav>
 	<body>
 		<div class="touchscreen">
 			<div id="status"></div>
 		</div>
+		
 	</body>
+	
+	<div id="dialog-form" title="Add Point Cloud Data">
+
+	<p class="validateTips">All form fields are required.</p>
+   <form id="addPC" runat="server">
+    <fieldset>
+	  <label for="zipfile">File (.zip)</label>
+      <input type="file" name="zipfile" id="zipfile" accept=".zip" class="text ui-widget-content ui-corner-all">
+      <label for="dirName">Name</label>
+      <input type="text" name="dirName" id="dirName" value="" class="text ui-widget-content ui-corner-all">
+      <label for="img">Image (.png)</label>
+      <input type="file" name="img" id="img" accept=".png" class="text ui-widget-content ui-corner-all">
+	  <img id="preview" src="#" alt="your image" />
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+  
+  
+  	<div id="dialog-form2" title="Edit Point Cloud Data">
+	<p class="validateTips">Insert the new name and/or image.</p>
+    <form id="editPC">
+    <fieldset>
+      <label for="dirName2">Name</label>
+      <input type="text" name="dirName2" id="dirName2" value="" class="text ui-widget-content ui-corner-all">
+      <label for="img2">Image (.png)</label>
+      <input type="file" name="img2" id="img2" accept=".png" class="text ui-widget-content ui-corner-all">
+	  <img id="preview2" src="#" alt="your image" />
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+</div>
+
 </html>
 
