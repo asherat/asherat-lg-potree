@@ -45,7 +45,7 @@ web_path="/var/www/";
 if [ -d "/var/www/html" ] ; then
   web_path=$webpath"html/";
 fi
-sudo cp $potreePath/php-interface/* $web_path >> $log_file 2>&1 && \
+sudo cp $potreePath/php-interface/html/* $web_path >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Moving lg-potree files to the node server
