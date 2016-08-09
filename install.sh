@@ -54,10 +54,10 @@ yes | cp -rf $potreePath/* $nodePath >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Create new ssh keys and make a duplicate for www-data
-if [[ ! -f /opt/www-files/*id_rsa && ! -f /opt/www-files/*id_rsa.pub ]]; then
+if [[ -f /opt/www-files/*id_rsa && -f /opt/www-files/*id_rsa.pub ]]; then
 	echo -e "\nUsing already existing SSH Keys";
 else
-	if [[ ! -f $HOME/.ssh/*id_rsa && ! -f $HOME/.ssh/*id_rsa.pub ]] ; then
+	if [[ -f $HOME/.ssh/*id_rsa && -f $HOME/.ssh/*id_rsa.pub ]] ; then
 		echo -ne "\nCopying already existing SSH Keys";
 	else
 		echo -ne "\nCreating ssh keys ... ";
