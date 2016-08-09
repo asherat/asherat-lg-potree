@@ -33,7 +33,6 @@ echo "COMPLETED";
 echo -ne "\nRestarting apache ... ";
 sudo service apache2 restart >> $log_file 2>&1 && \
 echo "COMPLETED";
-exit
 
 #Compile the spacenav-emitter driver
 echo -ne "\nCompiling controller driver ... ";
