@@ -2,6 +2,7 @@
 
 ####Declaring config variables######
 nodePath="$HOME/asherat666-peruse-a-rue";
+potreePath="$HOME/asherat666-lg-potree"
 
 log_file="mylog.log";
 cat /dev/null > $log_file;
@@ -33,9 +34,10 @@ echo -ne "\nRestarting apache ... ";
 sudo service apache2 restart >> $log_file 2>&1 && \
 echo "COMPLETED";
 exit
+
 #Compile the spacenav-emitter driver
 echo -ne "\nCompiling controller driver ... ";
-gcc -m32 -o nodeServer/bin/spacenav-emitter nodeServer/spacenav-emitter.c >> $log_file 2>&1 && \
+gcc -m32 -o $potreePath/nodeServer/bin/spacenav-emitter $potreePath/nodeServer/spacenav-emitter.c >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Moving php-interface to apache
@@ -44,28 +46,33 @@ web_path="/var/www/";
 if [ -d "/var/www/html" ] ; then
   web_path=$webpath"html/";
 fi
-sudo cp php-interface/* $web_path >> $log_file 2>&1 && \
+sudo cp $potreePath/php-interface/* $web_path >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Moving lg-potree files to the node server
 echo -ne "\nCopying Potree Files ... ";
-yes | cp -rf * $nodePath >> $log_file 2>&1 && \
+yes | cp -rf $potreePath/* $nodePath >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Create new ssh keys and make a duplicate for www-data
-if [[ ! -f $HOME/.ssh/*id_rsa && ! -f $HOME/.ssh/*id_rsa.pub ]] ; then
-	echo -ne "\nUsing already existing SSH Keys";
+if [[ ! -f /opt/www-files/*id_rsa && ! -f /opt/www-files/*id_rsa.pub ]]; then
+	echo -e "\nUsing already existing SSH Keys";
 else
-	echo -ne "\nCreating ssh keys ... ";
-	ssh-keygen -t rsa -f $HOME/.ssh/id_rsa -q -P "" >> $log_file 2>&1 && \
+	if [[ ! -f $HOME/.ssh/*id_rsa && ! -f $HOME/.ssh/*id_rsa.pub ]] ; then
+		echo -ne "\nCopying already existing SSH Keys";
+	else
+		echo -ne "\nCreating ssh keys ... ";
+		ssh-keygen -t rsa -f $HOME/.ssh/id_rsa -q -P "" >> $log_file 2>&1 && \
+		echo "COMPLETED";
+	fi
+	echo -ne "\nMoving keys and giving access to web user ... ";
+	sudo mkdir /opt/www-files >> $log_file 2>&1 \
+	sudo cp $HOME/.ssh/*id_rsa* /opt/www-files >> $log_file 2>&1 && \
+	sudo chown www-data:www-data /opt/www-files >> $log_file 2>&1 && \
+	sudo chown www-data:www-data /opt/www-files/* >> $log_file 2>&1 && \
 	echo "COMPLETED";
 fi
-echo -ne "\nMoving keys and giving access to web user ... ";
-sudo mkdir /opt/www-files >> $log_file 2>&1 \
-sudo cp $HOME/.ssh/*id_rsa* /opt/www-files >> $log_file 2>&1 && \
-sudo chown www-data:www-data /opt/www-files >> $log_file 2>&1 && \
-sudo chown www-data:www-data /opt/www-files/* >> $log_file 2>&1 && \
-echo "COMPLETED";
+
 
 #Copy the ssh keys to the Liquid Galaxy
 if [ $user_input == "true" ] ; then
