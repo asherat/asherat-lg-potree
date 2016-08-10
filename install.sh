@@ -55,7 +55,7 @@ echo "COMPLETED";
 
 #Installing necessary node dependencies
 echo -ne "\nInstalling Node dependencies ... ";
-cd $nodePath && npm install unzip express-fileupload express >> $log_file 2>&1 && \
+cd $nodePath && npm install unzip express-fileupload express  && cd .. >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Create new ssh keys and make a duplicate for www-data
