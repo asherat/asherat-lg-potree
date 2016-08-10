@@ -630,15 +630,15 @@ var initThree = function (){
 				if(firstFlipYZ)
 					flipYZ();
 				
-				if(controls){
-					controls.enabled = false;
-				}
-				useSpacenavControls();
+
 				
 				initGUI();	
 				camera.zoomTo(pointcloud, 0);
 
-
+				if(controls){
+					controls.enabled = false;
+				}
+				useSpacenavControls();
 			});
 		}
 	});

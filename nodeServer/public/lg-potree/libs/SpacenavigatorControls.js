@@ -69,7 +69,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		Z: 'Z'.charCodeAt(0),
 		C: 'C'.charCodeAt(0),
 		T: 'T'.charCodeAt(0),
-		G: 'G'.charCodeAt(0)
+		G: 'G'.charCodeAt(0),
+		L: 'L'.charCodeAt(0)
 	};
 
 	var scope = this;
@@ -98,9 +99,11 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	var state = STATE.NONE;
 
 	// for reset
+
 	this.position0 = this.object.position.clone();
 	this.rotation0 = this.object.rotation.clone();
 
+	console.log(this.object);
 	// events
 
 	var changeEvent = { type: 'change' };
@@ -497,6 +500,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		case scope.keys.E: 	scope.isTurnRight = false; break;
 		case scope.keys.T:	scope.isRollUp = false; break;
 		case scope.keys.G:	scope.isRollDown = false; break;
+		case scope.keys.L:	needsReset = true;break;
 		}
 	}
 	

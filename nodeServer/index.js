@@ -178,6 +178,7 @@ module.exports.main = function() {
 				  }
 				});
 				fs.rmdirSync(path);
+				console.log("Successfully deleted", dirName);
 			  }
 			};
 
