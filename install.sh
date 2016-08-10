@@ -53,6 +53,11 @@ echo -ne "\nCopying Potree Files ... ";
 yes | cp -rf $potreePath/* $nodePath >> $log_file 2>&1 && \
 echo "COMPLETED";
 
+#Installing necessary node dependencies
+echo -ne "\nInstalling Node dependencies ... ";
+cd $nodePath && npm install unzip express-fileupload express >> $log_file 2>&1 && \
+echo "COMPLETED";
+
 #Create new ssh keys and make a duplicate for www-data
 if [[ -f /opt/www-files/*id_rsa && -f /opt/www-files/*id_rsa.pub ]]; then
 	echo -e "\nUsing already existing SSH Keys";
