@@ -1,0 +1,4 @@
+# Set up the space navigator to always have a symlink
+# of /dev/input/spacenavigator
+
+SUBSYSTEM=="input", KERNEL=="event[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c626", MODE="0664", GROUP="plugdev", SYMLINK+="input/spacenavigator"
