@@ -103,7 +103,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.position0 = this.object.position.clone();
 	this.rotation0 = this.object.rotation.clone();
 
-	console.log(this.object);
 	// events
 
 	var changeEvent = { type: 'change' };
