@@ -82,6 +82,8 @@ CPManager.on('updateArgs', function(data) {
 	pSizeType.setValue(data.sizeType);
 	pMaterial.setValue(data.material);
 	pQuality.setValue(data.quality);
+	if(pEDL !== undefined)
+		pEDL.setValue(data.EDL);
 	//pEDL.setValue(data.EDL);
 	pFlipYZ.setValue(data.flipYZ);
 	pSkybox.setValue(data.skybox);
@@ -89,7 +91,7 @@ CPManager.on('updateArgs', function(data) {
 
 	//Settings
 	pClipMode.setValue(data.ClipMode);
-	pDEMCollisions.setValue(data.useDEMCollisions);
+	pDEMCollisions.setValue(data.DEMCollisions);
 	pMinNodeSize.setValue(data.MinNodeSize);
 
 
@@ -464,6 +466,8 @@ function initGUI(){
 		pEDL = fAppearance.add(params, 'EDL');
 		pEDL.onChange(function(value){
 			sceneProperties.useEDL = value;
+			changeArgs.EDL = value;
+			guiChanged = true;
 		});
 		guiArgs.isEDLenabled = true;
 	}else{
