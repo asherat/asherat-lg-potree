@@ -71,8 +71,8 @@ var changeArgs  = {
 	"skybox": false,
 	"sponsors": true, //NO
 
-	"ClipMode": "Highlight Inside", //NO
-	"DEMCollisions": false, //NO
+	"ClipMode": "Highlight Inside",
+	"DEMCollisions": false,
 	"MinNodeSize": 100,
 
 	"stats": false, 
@@ -129,7 +129,7 @@ function loadArgs(data){
 
 	//Settings
 	pClipMode.setValue(data.clipMode);
-	pDEMCollisions.setValue(data.useDEMCollisions);
+	pDEMCollisions.setValue(data.DEMCollisions);
 	pMinNodeSize.setValue(data.MinNodeSize);
 
 
@@ -254,9 +254,10 @@ function initGUI(args, guiArgs){
 			sendArgs();
 		});
 		
+
 		pDEMCollisions = fSettings.add(params, 'DEM Collisions');
 		pDEMCollisions.onChange(function(value){
-			changeArgs.useDEMCollisions = value;
+			changeArgs.DEMCollisions = value;
 			sendArgs();
 		});
 		
