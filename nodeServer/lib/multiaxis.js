@@ -55,7 +55,7 @@ var relay = function( io, port, hyperlapse_delay ) {
     }
 
     function InputEvent( buf ) {
-//return buf;
+	//return buf;
       var device = buf.toString( 'utf8', 16 );
       var type = buf.readUInt16LE( 8 );
       var code = buf.readUInt16LE( 10 );
@@ -69,7 +69,7 @@ var relay = function( io, port, hyperlapse_delay ) {
             //LogState();
             break;
           case EV_KEY:
-// buttonEvent( value ); -- send button on press, rather than press state. Start Alf
+		// buttonEvent( value ); -- send button on press, rather than press state. Start Alf
 		if (value == 0) { // 0 is button released
 		  clearInterval( buttonTimer );
 		} else if (value == 1) { // 1 is pressed
@@ -106,9 +106,9 @@ var relay = function( io, port, hyperlapse_delay ) {
     io.of('/multiaxis').emit( 'button', value );
   }
 
-  //function sendButtonEvent( code ) {
-  //          buttonEvent( code ); // send id of the pressed button
-  //}
+  function sendButtonEvent( code ) {
+            buttonEvent( code ); // send id of the pressed button
+  }
 
 	var bLeft = false;
 	var bRight = false;

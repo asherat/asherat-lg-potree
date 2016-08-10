@@ -51,7 +51,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.enabled = true;
 	this.rotateSpeed = 1.0;
 	this._rotateSpeed = 0.3;
-	this.moveSpeed = 10.0;
+	this.moveSpeed = 5.0;
 
 	this.keys = { 
 		LEFT: 37, 
@@ -67,7 +67,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		Q: 'Q'.charCodeAt(0),
 		E: 'E'.charCodeAt(0),
 		Z: 'Z'.charCodeAt(0),
-		C: 'C'.charCodeAt(0)
+		C: 'C'.charCodeAt(0),
+		T: 'T'.charCodeAt(0),
+		G: 'G'.charCodeAt(0)
 	};
 
 	var scope = this;
@@ -200,54 +202,61 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	var spaceNavAbs;
 	var needsReset = false;
 	require(['libs/multiaxis'],
-	function(MultiAxisModule) 
-	{   
+	function(MultiAxisModule)
+	{
 		// *** create and link the MultiAxis module
 		var multiaxis = new MultiAxisModule();
 		multiaxis.on('abs', function(abs){
 			spaceNavAbs = abs;
-			//console.debug(abs)
 		});
 		multiaxis.on('reset', function(){
 			needsReset = true;
 		});
+		multiaxis.on('raiseSpeed', function(){
+			scope.moveSpeed += scope.moveSpeed * 0.1 ;
+		});
+		multiaxis.on('lowerSpeed', function(){
+                        scope.moveSpeed -= scope.moveSpeed * 0.1 ;
+                        scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
+
+		});
 		multiaxis.init();
 	});
 
-	
+
 
 
 	this.update = function (delta) {
     	myDelta = delta;
 
 		this.object.rotation.order = 'ZYX';
-		
+
 		var object = this.object;
-		
+
 		this.object = new THREE.Object3D();
 		this.object.position.copy(object.position);
 		this.object.rotation.copy(object.rotation);
 		this.object.updateMatrix();
 		this.object.updateMatrixWorld();
-		
+
 		var position = this.object.position;
 		if(needsReset)
 			this.reset();
 		if(delta !== undefined){
 			if (spaceNavAbs !== undefined){
-				//console.debug(spaceNavAbs);
+				console.log(spaceNavAbs.RX);
 				if (Math.abs(spaceNavAbs.X) > 0)
-					this.panLeft (-delta * spaceNavAbs.X);
+					this.panLeft (-delta * spaceNavAbs.X/10 * this.moveSpeed);
 				if (Math.abs(spaceNavAbs.Y) > 0)
-					this.panUp ( -delta * spaceNavAbs.Y);
+					this.panUp ( -delta * spaceNavAbs.Y/10 * this.moveSpeed);
 				if (Math.abs(spaceNavAbs.Z) > 0)
-					this.panForward ( delta * spaceNavAbs.Z);
+					this.panForward ( delta * spaceNavAbs.Z/10 * this.moveSpeed);
 				if (Math.abs(spaceNavAbs.RX) > 0)
-					this.rotateUp ( -delta * spaceNavAbs.RX / 25);
+					this.rotateUp ( -delta * spaceNavAbs.RX/10 * this._rotateSpeed);
 				if (Math.abs(spaceNavAbs.RY) > 0)
-					this.rotateLeft ( delta * spaceNavAbs.RY / 20);
+					this.rotateLeft ( delta * spaceNavAbs.RY/10 * this._rotateSpeed);
 				if (Math.abs(spaceNavAbs.RZ) > 0)
-					this.rollLeft (delta * spaceNavAbs.RZ / 15);
+					this.rollLeft (delta * spaceNavAbs.RZ/3 * this._rotateSpeed);
 				spaceNavAbs = undefined;
 			}
 			if(this.moveRight){
@@ -280,9 +289,15 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			if(this.isTurnRight){
 				this.rotateLeft( delta * this._rotateSpeed);
 			}
-			
+			if(this.isRollUp){
+				this.rotateUp( -delta * this._rotateSpeed);
+			}
+                        if(this.isRollDown){
+                                this.rotateUp( delta * this._rotateSpeed);
+                        }
+
 		}
-		
+
 		if(!pan.equals(new THREE.Vector3(0,0,0))){
 			var event = {
 				type: 'move',
@@ -290,9 +305,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			};
 			this.dispatchEvent(event);
 		}
-		
+
 		position.add(pan);
-		
+
 		/*if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
 			var event = {
 				type: 'rotate',
@@ -306,10 +321,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		/*var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
 		var res = new THREE.Matrix4().multiplyMatrices(rot, this.object.matrix);
 		this.object.quaternion.setFromRotationMatrix(res);
-		
+
 		this.object.rotation.x += phiDelta;*/
 		this.object.updateMatrixWorld();
-		
+
 		// send transformation proposal to listeners
 		var proposeTransformEvent = {
 			type: "proposeTransform",
@@ -319,27 +334,27 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			counterProposals: []
 		};
 		this.dispatchEvent(proposeTransformEvent);
-		
+
 		// check some counter proposals if transformation wasn't accepted
 		if(proposeTransformEvent.objections > 0 ){
 			if(proposeTransformEvent.counterProposals.length > 0){
 				var cp = proposeTransformEvent.counterProposals;
 				this.object.position.copy(cp[0]);
-				
+
 				proposeTransformEvent.objections = 0;
 				proposeTransformEvent.counterProposals = [];
 			}
 		}
-		
+
 		// apply transformation, if accepted
 		if(proposeTransformEvent.objections > 0){
-			
+
 		}else{
 			object.position.copy(this.object.position);
 		}
-		
+
 		object.rotation.copy(this.object.rotation);
-		
+
 		this.object = object;
 
 		//thetaDelta = 0;
@@ -352,8 +367,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			lastPosition.copy( this.object.position );
 			lastRotation.copy( this.object.rotation );
 		}
-		
-		
 
 	};
 
@@ -460,6 +473,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		case scope.keys.C: 	scope.isRollRight = true; break;	
 		case scope.keys.Q: 	scope.isTurnLeft = true; break;	
 		case scope.keys.E: 	scope.isTurnRight = true; break;
+                case scope.keys.T:      scope.isRollUp = true; break;
+                case scope.keys.G:      scope.isRollDown = true; break;
+
 		}
 	}
 	
@@ -479,6 +495,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		case scope.keys.C: 	scope.isRollRight = false; break;	
 		case scope.keys.Q: 	scope.isTurnLeft = false; break;	
 		case scope.keys.E: 	scope.isTurnRight = false; break;
+		case scope.keys.T:	scope.isRollUp = false; break;
+		case scope.keys.G:	scope.isRollDown = false; break;
 		}
 	}
 	

@@ -3,6 +3,7 @@
 ?>
 <html>
 	<head>
+		<link rel="icon" type="image/png" href="icon.png" />
 		<link rel="stylesheet" type="text/css" href="style.css" />
 		<script type="text/javascript" src="javascript.js"></script> 
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>

@@ -63,7 +63,6 @@ define(
 						dirty = true;
 					}
 				}
-				
 
 			if (dirty) {
 				self.emit('abs', {X:ret[0], Z:ret[1], Y:ret[2], RX:ret[3], RZ:ret[4], RY:ret[5] } );

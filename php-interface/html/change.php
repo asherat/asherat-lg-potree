@@ -41,7 +41,7 @@ and isset($_REQUEST['nodePort']) and ($_REQUEST['nodePort'] != '')) {
 
     $message = "Connecting LG at " . $remote_IP . " \n to Server at " . $peruse_IP.":".$peruse_Port;
 
-    $nodeServerPath = 'node '.$node_path.'/asherat666-peruse-a-rue/bin/peruse-a-rue';
+    $nodeServerPath = 'nodejs '.$node_path.'/asherat666-peruse-a-rue/bin/peruse-a-rue';
     $controllerPath = $node_path.'/asherat666-peruse-a-rue/bin/spacenav-emitter /dev/input/spacenavigator 127.0.0.1 '.$peruse_Port;
     $local_cmd = 'killall -q chromium-browser node spacenav-emitter';
 
