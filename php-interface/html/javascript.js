@@ -82,7 +82,11 @@ function openManager(){
   var win = window.open(url, '_blank');
   win.focus();
 }
-
+function FullscreenBrowsers {
+  var lgIP = document.getElementById('lgIP').value;
+  submitRequest('change.php?fullscreen=' + lgIP);
+  showAndHideStatus();	
+}
 function RefreshBrowsers() {
   var lgIP = document.getElementById('lgIP').value;
   submitRequest('change.php?refresh=' + lgIP);

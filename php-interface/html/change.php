@@ -31,6 +31,13 @@ function sendCmd($IP, $CMD, $msg, $user="lg"){
 
 }
 
+function sendKey($IP, $key, $msg, $user="lg"){
+	$find_id='xdotool search --onlyvisible --class chromium|head -1';
+	$cmd='export DISPLAY=:0.0 && xdotool windowactivate '.$find_id.' && xdotool key '.$key;
+	$cmd='export PATH=$PATH:$HOME/bin && lg-run "' . $cmd . '"';
+	sendCmd($IP, $cmd, $msg);
+}
+
 if (isset($_REQUEST['initPeruse']) and ($_REQUEST['initPeruse'] != '') 
 and isset ($_REQUEST['nodeIP']) and ($_REQUEST['nodeIP'])
 and isset($_REQUEST['nodePort']) and ($_REQUEST['nodePort'] != '')) { 
@@ -67,11 +74,11 @@ and isset($_REQUEST['nodePort']) and ($_REQUEST['nodePort'] != '')) {
 	sendCmd($remote_IP, $remote_cmd, $message);
 }elseif (isset($_REQUEST['refresh']) and ($_REQUEST['refresh'] != '')) { 
 	$remote_IP = $_REQUEST['refresh'];
+	sendKey($remote_IP, "ctrl+F5", "Refreshing");
 
-	$find_id='xdotool search --onlyvisible --class chromium|head -1';
-	$cmd='export DISPLAY=:0.0 && xdotool windowactivate '.$find_id.' && xdotool key ctrl+F5';
-	$cmd='export PATH=$PATH:$HOME/bin && lg-run "' . $cmd . '"';
-	sendCmd($remote_IP, $cmd, "Refreshing");
+}elseif (isset($_REQUEST['fullscreen']) and ($_REQUEST['fullscreen'] != '')) { 
+	$remote_IP = $_REQUEST['refresh'];
+	sendKey($remote_IP, "F11", "Refreshing");
 
 }elseif (isset($_REQUEST['stop']) and ($_REQUEST['stop'] != '')) {
 	$remote_IP = $_REQUEST['stop'];
