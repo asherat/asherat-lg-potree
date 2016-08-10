@@ -136,27 +136,43 @@ $( function() {
 			return false;
 		}
 	}
- 
+ function sendForm(data, url){
+	$.ajax({
+		url: url,
+		type: 'POST',
+		xhr: function(){
+			var myXhr = $.ajaxSettings.xhr();
+			return myXhr;
+		},
+		enctpye: 'multipart/form-data',
+		data: data,
+		cache: false,
+		contentType: false,
+		processData: false
+		}).done(function(){
+			window.location.reload();
+		}).error(function(e){
+			console.log("ERROR:", e);
+	});
+}
     function addPC() {
-      var valid = true;
-      allFields.removeClass( "ui-state-error" );
-	  
-	  valid = valid && checkExt( zipfile.val(), '.zip', "Data must be a .zip file" );
-      valid = valid && checkLength( dirName, "Point Cloud Data", 3, 25 );
-      valid = valid && checkRegexp( dirName, dirRegex, "Invaled name" );
-	  valid = valid && checkExt( img.val(), '.png', "Image must be a .png file" );
-	  
+	  var valid = true;
+	      allFields.removeClass( "ui-state-error" );
+		  
+		  valid = valid && checkExt( zipfile.val(), '.zip', "Data must be a .zip file" );
+	      valid = valid && checkLength( dirName, "Point Cloud Data", 3, 25 );
+	      valid = valid && checkRegexp( dirName, dirRegex, "Invaled name" );
+		  valid = valid && checkExt( img.val(), '.png', "Image must be a .png file" );
+		  
 
-      if ( valid ) {
-		console.log("Added Point Cloud Data", dirName.val());
-		form[0].submit();
-		$(this).find('#addPC')[0].reset();
-		$("#preview").attr('src', "#");
-		dialog.dialog( "close" );
-		window.location.reload();
-      }
-      return valid;
-    }
+	      if ( valid ) {
+
+		var formData = new FormData($('form#addPC')[0]);
+		sendForm(formData, '/create');
+		
+		}
+		return valid;
+	    }
  
     dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
@@ -179,11 +195,12 @@ $( function() {
       }
     });
 	
-	
+
     form = dialog.find( "form#addPC" ).on( "submit", function( event ) {
       event.preventDefault();
       addPC();
     });
+	
  
     $( document.body ).on( "click", '#create-pc', function() {
       dialog.dialog( "open" );
@@ -207,16 +224,37 @@ $( function() {
 	  
 
       if ( valid ) {
-		console.log("Edited Point Cloud Data", dirName2.val());
-		form2[0].submit();
-		$(this).find('#editPC')[0].reset();
-		$('#preview2').attr('src', '#');
-		dialog2.dialog( "close" );
-		window.location.reload();
+		
+		var formData = new FormData($('form#editPC')[0]);
+		sendForm(formData, '/update');
       }
       return valid;
     }
- 
+ $(document).ready(function() {
+	$(function() {
+		$("#dialog").dialog({
+			autoOpen: false
+		});
+		$("#button").on("click", function() {
+			$("#dialog").dialog("open");
+		});
+	});
+	// Validating Form Fields.....
+	$("#submit").click(function(e) {
+		var email = $("#email").val();
+		var name = $("#name").val();
+		var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+		if (email === '' || name === '') {
+			alert("Please fill all fields...!!!!!!");
+			e.preventDefault();
+		} else if (!(email).match(emailReg)) {
+			alert("Invalid Email...!!!!!!");
+			e.preventDefault();
+		} else {
+			alert("Form Submitted Successfully......");
+		}
+	});
+});
     dialog2 = $( "#dialog-form2" ).dialog({
       autoOpen: false,
       height: 440,
@@ -253,11 +291,12 @@ $( function() {
 	  origName3 = $( "#origName3" );
 
     function deletePC() {
- 
-		console.log("Deleted Point Cloud Data", origName3.val());
+ 		var formData = new FormData($('form#deletePC')[0]);
+		sendForm(formData, '/delete');
+		/*console.log("Deleted Point Cloud Data", origName3.val());
 		form3[0].submit();
 		dialog3.dialog( "close" );
-		window.location.reload();
+		window.location.reload();*/
       
       return true;
     }

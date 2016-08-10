@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. lg-potree-stop
 
 remote_IP=$1
 peruse_IP=$2
 peruse_Port=$3
 remote_user=$4
+
+. lg-potree-stop $remote_IP $remote_user
 
 device_id='/dev/input/spacenavigator'
 

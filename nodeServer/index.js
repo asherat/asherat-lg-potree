@@ -95,6 +95,7 @@ module.exports.main = function() {
 				}else{
 					try{
 						fs.renameSync(oldPath, newPath);
+						res.status(200).send();
 					}catch(e){
 						console.log("ERROR: Tried to rename "+oldPath+" to "+newPath+" : "+err);
 						res.status(500).send(err);
@@ -151,6 +152,7 @@ module.exports.main = function() {
 								res.status(500).send(err);
 							}
 					});
+					res.status(200).send();
 					console.log("Succesfully created", dirName);
 					
 				}catch(e){
@@ -181,7 +183,7 @@ module.exports.main = function() {
 
 
 			deleteFolderRecursive(dirPath);
-					
+				res.status(200).send();	
 		});
   //
   // begin socket.io

@@ -26,7 +26,7 @@ user_input=$1;
 echo $separator;
 #Install all necessary packages
 echo -ne "Installing packages ... ";
-sudo apt-get -y install nodejs ssh php apache2 php-ssh2 gcc-multilib sshpass >> $log_file 2>&1 && \
+sudo apt-get -y install nodejs ssh php5 apache2 libssh2-php gcc-multilib sshpass >> $log_file 2>&1 && \
 echo "COMPLETED";
 
 #Restart apache to load libssh2-php
