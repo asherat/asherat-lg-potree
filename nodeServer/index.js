@@ -18,6 +18,7 @@
 module.exports.main = function() {
 
   var program = require('commander');
+  var fs = require('fs');
   var path = require('path');
   var stylus = require('stylus');
   var connect = require('connect');
@@ -35,6 +36,7 @@ module.exports.main = function() {
 
   // serve http from this path
   var docRoot = path.join(__dirname, 'public');
+  var resRoot = path.join(docRoot, '/lg-potree/resources/pointclouds');
 
   // merge config files
   var config = require('./lib/config');
@@ -52,10 +54,15 @@ module.exports.main = function() {
   //
   // start up the HTTP server
   //
+	var express = require('express');
+	var fileUpload = require('express-fileupload');
+	var app = express();
 
-  var app = connect()
-      // compile stylesheets on demand
-      .use( stylus.middleware({
+	// default options 
+	app.use(fileUpload());
+
+
+	app.use( stylus.middleware({
         src: docRoot,
         dest: docRoot,
         compile: function(str, path) {
@@ -64,25 +71,123 @@ module.exports.main = function() {
           .set('filename', path)
           .set('compress', true)
         }
-      }))
+      }));
       // serve static files
-      .use( connect.static( docRoot ) )
+      app.use( connect.static( docRoot ) );
       // serve the global configuration script
-      .use( config.middleware )
+      app.use( config.middleware );
       // Google Earth NetworkLink handler
       //.use( geRecv.handler )
       // no url match? send a 404
-      .use( function( req, res ) {
-        res.statusCode = 404;
-        res.end('<h1>404</h1>');
-      })
-      .listen( listenPort );
 
+      var server = app.listen( listenPort );
+		app.post('/update', function(req, res) {
+
+			var origName = req.body.origName;
+			var dirName2 = req.body.dirName2;
+			
+			if(origName != dirName2){
+				console.log("Updating "+origName+" to "+dirName2);
+				var oldPath = path.join(resRoot, origName);
+				var newPath = path.join(resRoot, dirName2);
+				if(fs.existsSync(newPath)){
+					res.status(500).send(dirName2+" already exists!");
+				}else{
+					try{
+						fs.renameSync(oldPath, newPath);
+					}catch(e){
+						console.log("ERROR: Tried to rename "+oldPath+" to "+newPath+" : "+err);
+						res.status(500).send(err);
+					}
+				}
+			}
+
+			var img2 = req.files.img2;
+			if(img2.name != ''){
+				if(img2.mimetype == 'image/png'){
+					var destFile = path.join(resRoot, dirName2, '/preview.png');
+
+					img2.mv(destFile, function(err) {
+						if (err) {
+							res.status(500).send(err);
+						}
+					});
+				
+				}else {
+						res.send('Image is not a png');
+				}
+			}
+			
+		});
+		app.post('/create', function(req, res) {
+			var unzip = require('unzip');
+			var zipFile = req.files.zipfile;
+			var dirName = req.body.dirName;
+			var img = req.files.img;
+
+			var newPath = path.join(resRoot, dirName);
+			if(fs.existsSync(newPath)){
+				res.status(500).send(dirName+" already exists!");
+			}else{
+				try{
+					fs.mkdirSync(newPath);
+					console.log("Creating new Point Cloud Data", dirName);
+					var destFile = path.join(resRoot, dirName, '/preview.png');
+					if(img.name == ''){
+						console.log("Using default image");
+						//fs.readFileSync()	//Copy
+					}else{
+						img.mv(destFile, function(err) {
+							if (err) {
+								res.status(500).send(err);
+							}
+						});
+					}
+					var zipDestFile = path.join(resRoot, dirName, 'zipfile.zip');
+					zipFile.mv(zipDestFile, function(err) {
+						fs.createReadStream(zipDestFile).pipe(unzip.Extract({ path: path.join(resRoot, dirName) }));
+						fs.unlink(zipDestFile);
+							if (err) {
+								res.status(500).send(err);
+							}
+					});
+					console.log("Succesfully created", dirName);
+					
+				}catch(e){
+					console.log(e);
+					res.status(500).send(e);
+				}
+			}			
+		});
+		
+		app.post('/delete', function(req, res) {
+
+			var dirName = req.body.origName3;
+			var dirPath = path.join(resRoot, dirName);
+			
+			var deleteFolderRecursive = function(path) {
+			  if( fs.existsSync(path) ) {
+				fs.readdirSync(path).forEach(function(file,index){
+				  var curPath = path + "/" + file;
+				  if(fs.lstatSync(curPath).isDirectory()) { // recurse
+					deleteFolderRecursive(curPath);
+				  } else { // delete file
+					fs.unlinkSync(curPath);
+				  }
+				});
+				fs.rmdirSync(path);
+			  }
+			};
+
+
+			deleteFolderRecursive(dirPath);
+					
+		});
   //
   // begin socket.io
   //
 
-  var io = SocketIO.listen(app);
+  var io = SocketIO.listen(server);
   io.set( 'log level', 1 );
   io.enable( 'browser client minification' );
 

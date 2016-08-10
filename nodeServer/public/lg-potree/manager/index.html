@@ -34,7 +34,12 @@
 	<div id="dialog-form" title="Add Point Cloud Data">
 
 	<p class="validateTips">All form fields are required.</p>
-   <form id="addPC" runat="server">
+   <form ref='addPC' 
+		id="addPC"
+		action='/create' 
+		method='post' 
+		encType="multipart/form-data"
+   >
     <fieldset>
 	  <label for="zipfile">File (.zip)</label>
       <input type="file" name="zipfile" id="zipfile" accept=".zip" class="text ui-widget-content ui-corner-all">
@@ -42,22 +47,45 @@
       <input type="text" name="dirName" id="dirName" value="" class="text ui-widget-content ui-corner-all">
       <label for="img">Image (.png)</label>
       <input type="file" name="img" id="img" accept=".png" class="text ui-widget-content ui-corner-all">
-	  <img id="preview" src="#" alt="your image" />
+	  <img id="preview" src="../resources/images/logo_black.png" />
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+
+  	<div id="dialog-form2" title="Edit Point Cloud Data">
+	<p class="validateTips">Insert the new name and/or image.</p>
+    <form ref='editPC' 
+		id="editPC"
+		action='/update' 
+		method='post' 
+		encType="multipart/form-data"
+	>
+    <fieldset>
+	  <label for="origName">Original Name</label>
+      <input type="text" name="origName" id="origName" value="" class="text ui-widget-content ui-corner-all ui-state-disabled" readonly>
+      <label for="dirName2">New Name</label>
+      <input type="text" name="dirName2" id="dirName2" value="" class="text ui-widget-content ui-corner-all">
+      <label for="img2">Image (.png)</label>
+      <input type="file" name="img2" id="img2" accept=".png" class="text ui-widget-content ui-corner-all">
+	  <img id="preview2" src="#" />
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
     </fieldset>
   </form>
   
-  
-  	<div id="dialog-form2" title="Edit Point Cloud Data">
-	<p class="validateTips">Insert the new name and/or image.</p>
-    <form id="editPC">
+  <div id="dialog-form3" title="Delete Point Cloud Data">
+    <form ref='deletePC' 
+		id="deletePC"
+		action='/delete' 
+		method='post' 
+		encType="multipart/form-data"
+	>
     <fieldset>
-      <label for="dirName2">Name</label>
-      <input type="text" name="dirName2" id="dirName2" value="" class="text ui-widget-content ui-corner-all">
-      <label for="img2">Image (.png)</label>
-      <input type="file" name="img2" id="img2" accept=".png" class="text ui-widget-content ui-corner-all">
-	  <img id="preview2" src="#" alt="your image" />
+	  <label for="origName3">This will PERMANENTLY delete the following Point Cloud Data</label>
+	  <br/>
+      <input type="text" name="origName3" id="origName3" value="" class="text ui-widget-content ui-corner-all" readonly>
+	  <img id="preview3" src="#" />
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
     </fieldset>
