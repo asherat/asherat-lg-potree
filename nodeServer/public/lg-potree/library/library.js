@@ -1,5 +1,3 @@
-
-
 // Create SocketIO instance, connect
 var CPManager = io.connect('/manager');
 
@@ -13,14 +11,20 @@ CPManager.on('disconnect',function() {
 	console.debug('Manager Module has disconnected!');
 });
 
+// Gets the available Point Cloud list and displays it on the browser
 CPManager.on( 'CPDir', function( data ) {
-	//console.debug("RECEIVED:", data);
 	if (!data) return;
-	data = data.sort();
+	// Sort the data received regardless of capitalization
+	data = data.sort(function (a,b){
+		return a.toLowerCase().localeCompare(b.toLowerCase());
+	});
+	
 	var content = $( "#cpFiles" ).html();
+	// Add the photo, name and link to every Point Cloud Data
+	// If no photo is found, it gets the default logo_black via "this.onerror" function
 	for (i = 0; i < data.length; i++) { 
 		var newMsgContent = '<li><img src="../resources/pointclouds/' + data[i] + '/preview.png"' +
-		'onerror="this.onerror=null;this.src=\'../resources/images/logo.png\';" ' +
+		'onerror="this.onerror=null;this.src=\'../resources/images/logo_black.png\';" ' +
 		'onclick="sendMessageToServer(\'' + data[i] + '\')" />' +
 		'<h3>'+ data[i] +'</h3></li>';
 
@@ -34,42 +38,35 @@ CPManager.on( 'error', function( err ) {
 	console.error("FOUND ERROR", err);
 });
 
+// Gets the variable status from the Potree master
 CPManager.on('getArgsStatus', function( data ){
 		changeArgs = data;
 		waiting1 = false;
 	});
+	
+// Gets the available variable list from the Potree master
 CPManager.on('getArgsStatus2', function( data ){
 	
 		guiArgs = data;
 		waiting2 = false;
 	});
-// Sends a message to the server via sockets
-function sendMessageToServer(message) {
-	CPManager.emit('changeData',message);
-};
-
-
-function RefreshBrowsers(){
-	CPManager.emit('refresh');
-}
-
-
-
-
-var changeArgs  = { 
+	
+	
+var changeArgs = {
+	// Variables that can be set using the GUI
 	rotation: null,
 	position: null,
 	"points": 1,
 	"pointSize": 1.2,
 	"FOV": 30,
 	"opacity": 1,
-	"sizeType" : "Adaptive",
-	"material" : "RGB",
+	"sizeType" : 0,
+	"material" : 0,
 	"quality": "Squares",
 	"EDL": false,
 	"flipYZ": true,
 	"skybox": false,
-	"sponsors": true, //NO
+	"sponsors": true,
 
 	"ClipMode": "Highlight Inside",
 	"DEMCollisions": false,
@@ -79,69 +76,56 @@ var changeArgs  = {
 	"BoundingBox": false,
 	"freeze": false,
 
+	"sSizeType": "Adaptive",
+	"sMaterial": "RGB",
+	
 };
 
 var guiArgs = {
+	// These are the variable list, and are filled by the available Potree options
 	options : [ "RGB" ],
 	qualityOptions : [ "Squares", "Circles" ],
 	isEDLenabled : false,
 }
 
+
+// Alert the server that the new "data" has to be displayed
+function sendMessageToServer(data) {
+	CPManager.emit('changeData',data);
+};
+
+function sendArgs(){
+	CPManager.emit('newArgs', changeArgs);
+}
+
+function RefreshBrowsers(){
+	CPManager.emit('refresh');
+}
+
+
+// We want to wait for the Potree master node
+// the available variable list and the current variable status
+// It checks every 500ms for the variables, if they are not received
+// it won't load the GUI
 var waiting1 = true;
 var waiting2 = true;
-
 function waitArgs() {
-    if(waiting1 || waiting2) {//we want it to match
-        setTimeout(waitArgs, 50);//wait 50 millisecnds then recheck
+    if(waiting1 || waiting2) {
+        setTimeout(waitArgs, 500);
         return;
     }
 	initGUI(changeArgs, guiArgs);
 }
 
 
-
-
-
-
 $(document).ready(function() {
+	// Queries the available Point Cloud data
 	CPManager.emit('getCPDirs');
+	// Queries the available variable list and variables status
 	CPManager.emit('getArgsStatus');
 	waitArgs();
-	
-
 });	
 
-
-function loadArgs(data){
-	//Appearance
-	pPoints.setValue(data.points);
-	pPointSize.setValue(data.pointSize);
-	pFOV.setValue(data.FOV);
-	pOpacity.setValue(data.opacity);
-	pSizeType.setValue(data.sizeType);
-	pMaterial.setValue(data.material);
-	pQuality.setValue(data.quality);
-	if(pEDL !== undefined)
-		pEDL.setValue(data.EDL);
-	pFlipYZ.setValue(data.flipYZ);
-	pSkybox.setValue(data.skybox);
-	pSponsors.setValue(data.sponsors);
-
-	//Settings
-	pClipMode.setValue(data.clipMode);
-	pDEMCollisions.setValue(data.DEMCollisions);
-	pMinNodeSize.setValue(data.MinNodeSize);
-
-
-	//Debug
-	pStats.setValue(data.stats);
-	pBoundingBox.setValue(data.BoundingBox);
-	pFreeze.setValue(data.freeze);
-}
-
-function sendArgs(){
-	CPManager.emit('newArgs', changeArgs);
-}
 
 function initGUI(args, guiArgs){
 		gui = new dat.GUI({ width: 400	});
@@ -151,8 +135,8 @@ function initGUI(args, guiArgs){
 			"PointSize": args.pointSize,
 			"FOV": args.FOV,
 			"opacity": args.opacity,
-			"SizeType" : args.sizeType,
-			"Materials" : args.material,
+			"SizeType" : args.sSizeType,
+			"Materials" : args.sMaterial,
 			"quality": args.quality,
 			"EDL": args.EDL,
 			"FlipYZ": args.flipYZ,
@@ -198,20 +182,16 @@ function initGUI(args, guiArgs){
 		
 		pSizeType = fAppearance.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
 		pSizeType.onChange(function(value){
-			changeArgs.sizeType = value;
+			changeArgs.sSizeType = value;
 			sendArgs();
 		});
 			
-		//options = [ "RGB", "Color", "Elevation", "Intensity", "Intensity Gradient", 
-		//"Classification", "Return Number", "Source",
-		//"Tree Depth"]; // GET
 		pMaterial = fAppearance.add(params, 'Materials', guiArgs.options);
 		pMaterial.onChange(function(value){
-			changeArgs.material = value;
+			changeArgs.sMaterial = value;
 			sendArgs();
 		});
 		
-		//qualityOptions = ["Squares", "Circles", "Interpolation"]; //GET
 		pQuality = fAppearance.add(params, 'quality', guiArgs.qualityOptions);
 		pQuality.onChange(function(value){
 			changeArgs.quality = value;

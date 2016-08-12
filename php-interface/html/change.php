@@ -59,7 +59,7 @@ and isset($_REQUEST['nodePort']) and ($_REQUEST['nodePort'] != '')) {
 				frame="$(( ${frame} - ${LG_FRAMES_MAX} ))";
 			fi
 
-			CMD="killall chromium-browser; export DISPLAY=:0.0 && chromium-browser \"'.$peruse_IP.':'.$peruse_Port.'/lg-potree/ --start-fullscreen"
+			CMD="killall chromium-browser; export DISPLAY=:0.0 && chromium-browser --start-fullscreen \"'.$peruse_IP.':'.$peruse_Port.'/lg-potree/"
 			if [[ $frame -ne 0 ]] ; then
 				CMD=$CMD"slave.html?yawOffset="$frame;
 			fi

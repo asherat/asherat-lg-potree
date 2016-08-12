@@ -1,76 +1,76 @@
 
 
 /**
-* @author mschuetz / http://mschuetz.at
-*
-* adapted from THREE.OrbitControls by 
-*
-* @author qiao / https://github.com/qiao
-* @author mrdoob / http://mrdoob.com
-* @author alteredq / http://alteredqualia.com/
-* @author WestLangley / http://github.com/WestLangley
-* @author erich666 / http://erichaines.com
-*
-* This set of controls performs first person navigation without mouse lock.
-* Instead, rotating the camera is done by dragging with the left mouse button.
-*
-* move: a/s/d/w or up/down/left/right
-* rotate: left mouse
-* pan: right mouse
-* change speed: mouse wheel
-*
-*
-*/
-
+ * @author mschuetz / http://mschuetz.at
+ *
+ * adapted from THREE.OrbitControls by
+ *
+ * @author qiao / https://github.com/qiao
+ * @author mrdoob / http://mrdoob.com
+ * @author alteredq / http://alteredqualia.com/
+ * @author WestLangley / http://github.com/WestLangley
+ * @author erich666 / http://erichaines.com
+ *
+ * This set of controls performs first person navigation without mouse lock.
+ * Instead, rotating the camera is done by dragging with the left mouse button.
+ *
+ * move: a/s/d/w or up/down/left/right
+ * rotate: left mouse
+ * pan: right mouse
+ * change speed: mouse wheel
+ *
+ *
+ */
 
 requirejs.config({
-	paths: {
+	paths : {
 		// *** RequireJS Plugins
-		'async': '/js/lib/require/async',
+		'async' : '/js/lib/require/async',
 		// *** Dynamic Global Configuration
-		'config': '/js/config',
+		'config' : '/js/config',
 		// *** Common Deps
-		'bigl': '/js/bigl',
-		'stapes': '/js/lib/stapes/stapes.min',
-		'doT': '/js/lib/doT/doT.min',
-		'socketio': '/socket.io/socket.io',
+		'bigl' : '/js/bigl',
+		'stapes' : '/js/lib/stapes/stapes.min',
+		'doT' : '/js/lib/doT/doT.min',
+		'socketio' : '/socket.io/socket.io',
 	},
-	shim: {
-		'config': { exports: 'config' },
+	shim : {
+		'config' : {
+			exports : 'config'
+		},
 	},
 
 });
 
-
-THREE.FirstPersonControls = function ( object, domElement ) {
+THREE.FirstPersonControls = function (object, domElement) {
 
 	this.object = object;
-	this.domElement = ( domElement !== undefined ) ? domElement : document;
-	
+	this.domElement = (domElement !== undefined) ? domElement : document;
+
 	// Set to false to disable this control
 	this.enabled = true;
 	this.rotateSpeed = 1.0;
 	this._rotateSpeed = 0.3;
 	this.moveSpeed = 5.0;
 
-	this.keys = { 
-		LEFT: 37, 
-		UP: 38, 
-		RIGHT: 39, 
-		BOTTOM: 40,
-		A: 'A'.charCodeAt(0),
-		S: 'S'.charCodeAt(0),
-		D: 'D'.charCodeAt(0),
-		W: 'W'.charCodeAt(0),
-		R: 'R'.charCodeAt(0),
-		F: 'F'.charCodeAt(0),
-		Q: 'Q'.charCodeAt(0),
-		E: 'E'.charCodeAt(0),
-		Z: 'Z'.charCodeAt(0),
-		C: 'C'.charCodeAt(0),
-		T: 'T'.charCodeAt(0),
-		G: 'G'.charCodeAt(0),
-		L: 'L'.charCodeAt(0)
+	this.keys = {
+		LEFT : 37,
+		UP : 38,
+		RIGHT : 39,
+		BOTTOM : 40,
+		A : 'A'.charCodeAt(0),
+		S : 'S'.charCodeAt(0),
+		D : 'D'.charCodeAt(0),
+		W : 'W'.charCodeAt(0),
+		R : 'R'.charCodeAt(0),
+		F : 'F'.charCodeAt(0),
+		Q : 'Q'.charCodeAt(0),
+		E : 'E'.charCodeAt(0),
+		Z : 'Z'.charCodeAt(0),
+		C : 'C'.charCodeAt(0),
+		T : 'T'.charCodeAt(0),
+		G : 'G'.charCodeAt(0),
+		L : 'L'.charCodeAt(0)
 	};
 
 	var scope = this;
@@ -94,7 +94,12 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	var lastPosition = new THREE.Vector3();
 	var lastRotation = new THREE.Vector3();
 
-	var STATE = { NONE : -1, ROTATE : 0, SPEEDCHANGE : 1, PAN : 2 };
+	var STATE = {
+		NONE : -1,
+		ROTATE : 0,
+		SPEEDCHANGE : 1,
+		PAN : 2
+	};
 
 	var state = STATE.NONE;
 
@@ -105,131 +110,130 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	// events
 
-	var changeEvent = { type: 'change' };
-	var startEvent = { type: 'start'};
-	var endEvent = { type: 'end'};
+	var changeEvent = {
+		type : 'change'
+	};
+	var startEvent = {
+		type : 'start'
+	};
+	var endEvent = {
+		type : 'end'
+	};
 
-	this.rotateLeft = function ( angle ) {
+	this.rotateLeft = function (angle) {
 		//thetaDelta -= angle;
 		this.object.updateMatrix();
 		this.object.rotateOnAxis((new THREE.Vector3(0, 1, 0)), -angle);
 		this.object.updateMatrixWorld();
 	};
 
-	this.rotateUp = function ( angle ) {
+	this.rotateUp = function (angle) {
 		//phiDelta -= angle;
 		this.object.updateMatrix();
 		this.object.rotateOnAxis((new THREE.Vector3(1, 0, 0)), -angle);
 		this.object.updateMatrixWorld();
 	};
 
-	this.rollLeft = function ( anglespeed ) {
+	this.rollLeft = function (anglespeed) {
 		this.object.updateMatrix();
 		this.object.rotateOnAxis((new THREE.Vector3(0, 0, 1)), anglespeed);
 		this.object.updateMatrixWorld();
 
 	}
-	
 
-	
 	// pass in distance in world space to move left
-	this.panLeft = function ( distance ) {
+	this.panLeft = function (distance) {
 
 		var te = this.object.matrix.elements;
 
 		// get X column of matrix
-		panOffset.set( te[ 0 ], te[ 1 ], te[ 2 ] );
-		panOffset.multiplyScalar( - distance );
-		
-		pan.add( panOffset );
+		panOffset.set(te[0], te[1], te[2]);
+		panOffset.multiplyScalar( - distance);
+
+		pan.add(panOffset);
 
 	};
 
 	// pass in distance in world space to move up
-	this.panUp = function ( distance ) {
+	this.panUp = function (distance) {
 
 		var te = this.object.matrix.elements;
 
 		// get Y column of matrix
-		panOffset.set( te[ 4 ], te[ 5 ], te[ 6 ] );
-		panOffset.multiplyScalar( distance );
-		
-		pan.add( panOffset );
+		panOffset.set(te[4], te[5], te[6]);
+		panOffset.multiplyScalar(distance);
+
+		pan.add(panOffset);
 
 	};
-	
+
 	// pass in distance in world space to move forward
-	this.panForward = function ( distance ) {
+	this.panForward = function (distance) {
 
 		var te = this.object.matrix.elements;
 
 		// get Y column of matrix
-		panOffset.set( te[ 8 ], te[ 9 ], te[ 10 ] );
-		panOffset.multiplyScalar( distance );
-		
-		pan.add( panOffset );
+		panOffset.set(te[8], te[9], te[10]);
+		panOffset.multiplyScalar(distance);
+
+		pan.add(panOffset);
 
 	};
-	
-	this.pan = function ( deltaX, deltaY ) {
+
+	this.pan = function (deltaX, deltaY) {
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-		if ( scope.object.fov !== undefined ) {
+		if (scope.object.fov !== undefined) {
 			// perspective
 			var position = scope.object.position;
 			var offset = position.clone();
 			var targetDistance = offset.length();
 
 			// half of the fov is center to top of screen
-			targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
+			targetDistance *= Math.tan((scope.object.fov / 2) * Math.PI / 180.0);
 
 			// we actually don't use screenWidth, since perspective camera is fixed to screen height
-			scope.panLeft( 2 * deltaX * targetDistance / element.clientHeight );
-			scope.panUp( 2 * deltaY * targetDistance / element.clientHeight );
-		} else if ( scope.object.top !== undefined ) {
+			scope.panLeft(2 * deltaX * targetDistance / element.clientHeight);
+			scope.panUp(2 * deltaY * targetDistance / element.clientHeight);
+		} else if (scope.object.top !== undefined) {
 
 			// orthographic
-			scope.panLeft( deltaX * (scope.object.right - scope.object.left) / element.clientWidth );
-			scope.panUp( deltaY * (scope.object.top - scope.object.bottom) / element.clientHeight );
+			scope.panLeft(deltaX * (scope.object.right - scope.object.left) / element.clientWidth);
+			scope.panUp(deltaY * (scope.object.top - scope.object.bottom) / element.clientHeight);
 		} else {
 
 			// camera neither orthographic or perspective
-			console.warn( 'WARNING: FirstPersonControls.js encountered an unknown camera type - pan disabled.' );
+			console.warn('WARNING: FirstPersonControls.js encountered an unknown camera type - pan disabled.');
 		}
 	};
-
 
 	var myDelta;
 	var spaceNavAbs;
 	var needsReset = false;
 	require(['libs/multiaxis'],
-	function(MultiAxisModule)
-	{
+		function (MultiAxisModule) {
 		// *** create and link the MultiAxis module
 		var multiaxis = new MultiAxisModule();
-		multiaxis.on('abs', function(abs){
+		multiaxis.on('abs', function (abs) {
 			spaceNavAbs = abs;
 		});
-		multiaxis.on('reset', function(){
+		multiaxis.on('reset', function () {
 			needsReset = true;
 		});
-		multiaxis.on('raiseSpeed', function(){
-			scope.moveSpeed += scope.moveSpeed * 0.1 ;
+		multiaxis.on('raiseSpeed', function () {
+			scope.moveSpeed += scope.moveSpeed * 0.1;
 		});
-		multiaxis.on('lowerSpeed', function(){
-                        scope.moveSpeed -= scope.moveSpeed * 0.1 ;
-                        scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
+		multiaxis.on('lowerSpeed', function () {
+			scope.moveSpeed -= scope.moveSpeed * 0.1;
+			scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
 
 		});
 		multiaxis.init();
 	});
 
-
-
-
 	this.update = function (delta) {
-    	myDelta = delta;
+		myDelta = delta;
 
 		this.object.rotation.order = 'ZYX';
 
@@ -242,68 +246,68 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		this.object.updateMatrixWorld();
 
 		var position = this.object.position;
-		if(needsReset)
+		if (needsReset)
 			this.reset();
-		if(delta !== undefined){
-			if (spaceNavAbs !== undefined){
+		if (delta !== undefined) {
+			if (spaceNavAbs !== undefined) {
 				console.log(spaceNavAbs.RX);
 				if (Math.abs(spaceNavAbs.X) > 0)
-					this.panLeft (-delta * spaceNavAbs.X/10 * this.moveSpeed);
+					this.panLeft(-delta * spaceNavAbs.X / 10 * this.moveSpeed);
 				if (Math.abs(spaceNavAbs.Y) > 0)
-					this.panUp ( -delta * spaceNavAbs.Y/10 * this.moveSpeed);
+					this.panUp(-delta * spaceNavAbs.Y / 10 * this.moveSpeed);
 				if (Math.abs(spaceNavAbs.Z) > 0)
-					this.panForward ( delta * spaceNavAbs.Z/10 * this.moveSpeed);
+					this.panForward(delta * spaceNavAbs.Z / 10 * this.moveSpeed);
 				if (Math.abs(spaceNavAbs.RX) > 0)
-					this.rotateUp ( -delta * spaceNavAbs.RX/10 * this._rotateSpeed);
+					this.rotateUp(-delta * spaceNavAbs.RX / 10 * this._rotateSpeed);
 				if (Math.abs(spaceNavAbs.RY) > 0)
-					this.rotateLeft ( delta * spaceNavAbs.RY/10 * this._rotateSpeed);
+					this.rotateLeft(delta * spaceNavAbs.RY / 10 * this._rotateSpeed);
 				if (Math.abs(spaceNavAbs.RZ) > 0)
-					this.rollLeft (delta * spaceNavAbs.RZ/3 * this._rotateSpeed);
+					this.rollLeft(delta * spaceNavAbs.RZ / 3 * this._rotateSpeed);
 				spaceNavAbs = undefined;
 			}
-			if(this.moveRight){
+			if (this.moveRight) {
 				this.panLeft(-delta * this.moveSpeed);
 			}
-			if(this.moveLeft){
+			if (this.moveLeft) {
 				this.panLeft(delta * this.moveSpeed);
 			}
-			if(this.moveForward){
+			if (this.moveForward) {
 				this.panForward(-delta * this.moveSpeed);
 			}
-			if(this.moveBackward){
+			if (this.moveBackward) {
 				this.panForward(delta * this.moveSpeed);
 			}
-			if(this.moveUp){
+			if (this.moveUp) {
 				this.panUp(delta * this.moveSpeed);
 			}
-			if(this.moveDown){
+			if (this.moveDown) {
 				this.panUp(-delta * this.moveSpeed);
 			}
-			if(this.isRollLeft){
-				this.rollLeft( delta * this._rotateSpeed);
+			if (this.isRollLeft) {
+				this.rollLeft(delta * this._rotateSpeed);
 			}
-			if(this.isRollRight){
-				this.rollLeft( -delta * this._rotateSpeed);
+			if (this.isRollRight) {
+				this.rollLeft(-delta * this._rotateSpeed);
 			}
-			if(this.isTurnLeft){
-				this.rotateLeft( -delta * this._rotateSpeed);
+			if (this.isTurnLeft) {
+				this.rotateLeft(-delta * this._rotateSpeed);
 			}
-			if(this.isTurnRight){
-				this.rotateLeft( delta * this._rotateSpeed);
+			if (this.isTurnRight) {
+				this.rotateLeft(delta * this._rotateSpeed);
 			}
-			if(this.isRollUp){
-				this.rotateUp( -delta * this._rotateSpeed);
+			if (this.isRollUp) {
+				this.rotateUp(-delta * this._rotateSpeed);
 			}
-                        if(this.isRollDown){
-                                this.rotateUp( delta * this._rotateSpeed);
-                        }
+			if (this.isRollDown) {
+				this.rotateUp(delta * this._rotateSpeed);
+			}
 
 		}
 
-		if(!pan.equals(new THREE.Vector3(0,0,0))){
+		if (!pan.equals(new THREE.Vector3(0, 0, 0))) {
 			var event = {
-				type: 'move',
-				translation: pan.clone()
+				type : 'move',
+				translation : pan.clone()
 			};
 			this.dispatchEvent(event);
 		}
@@ -311,14 +315,14 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		position.add(pan);
 
 		/*if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
-			var event = {
-				type: 'rotate',
-				thetaDelta: thetaDelta,
-				phiDelta: phiDelta
-			};
-			this.dispatchEvent(event);
+		var event = {
+		type: 'rotate',
+		thetaDelta: thetaDelta,
+		phiDelta: phiDelta
+		};
+		this.dispatchEvent(event);
 		}
-		*/
+		 */
 		this.object.updateMatrix();
 		/*var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
 		var res = new THREE.Matrix4().multiplyMatrices(rot, this.object.matrix);
@@ -329,17 +333,17 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		// send transformation proposal to listeners
 		var proposeTransformEvent = {
-			type: "proposeTransform",
-			oldPosition: object.position,
-			newPosition: this.object.position,
-			objections: 0,
-			counterProposals: []
+			type : "proposeTransform",
+			oldPosition : object.position,
+			newPosition : this.object.position,
+			objections : 0,
+			counterProposals : []
 		};
 		this.dispatchEvent(proposeTransformEvent);
 
 		// check some counter proposals if transformation wasn't accepted
-		if(proposeTransformEvent.objections > 0 ){
-			if(proposeTransformEvent.counterProposals.length > 0){
+		if (proposeTransformEvent.objections > 0) {
+			if (proposeTransformEvent.counterProposals.length > 0) {
 				var cp = proposeTransformEvent.counterProposals;
 				this.object.position.copy(cp[0]);
 
@@ -349,9 +353,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 
 		// apply transformation, if accepted
-		if(proposeTransformEvent.objections > 0){
-
-		}else{
+		if (proposeTransformEvent.objections > 0) {}
+		else {
 			object.position.copy(this.object.position);
 		}
 
@@ -362,156 +365,227 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		//thetaDelta = 0;
 		//phiDelta = 0;
 		scale = 1;
-		pan.set( 0, 0, 0 );
+		pan.set(0, 0, 0);
 
-		if ( lastPosition.distanceTo( this.object.position ) > 0 || !lastRotation.equals(this.object.rotation) ) {
-			this.dispatchEvent( changeEvent );
-			lastPosition.copy( this.object.position );
-			lastRotation.copy( this.object.rotation );
+		if (lastPosition.distanceTo(this.object.position) > 0 || !lastRotation.equals(this.object.rotation)) {
+			this.dispatchEvent(changeEvent);
+			lastPosition.copy(this.object.position);
+			lastRotation.copy(this.object.rotation);
 		}
 
 	};
-
 
 	this.reset = function () {
 		state = STATE.NONE;
 		spaceNavAbs = undefined
-		this.object.position.copy( this.position0 );
-		this.object.rotation.copy( this.rotation0 );
+			this.object.position.copy(this.position0);
+		this.object.rotation.copy(this.rotation0);
 		needsReset = false;
 	};
 
-	function onMouseDown( event ) {
-		if ( scope.enabled === false ) return;
+	function onMouseDown(event) {
+		if (scope.enabled === false)
+			return;
 		event.preventDefault();
 
-		if ( event.button === 0 ) {
+		if (event.button === 0) {
 			state = STATE.ROTATE;
 
-			rotateStart.set( event.clientX, event.clientY );
-		} else if ( event.button === 2 ) {
+			rotateStart.set(event.clientX, event.clientY);
+		} else if (event.button === 2) {
 			state = STATE.PAN;
 
-			panStart.set( event.clientX, event.clientY );
+			panStart.set(event.clientX, event.clientY);
 		}
 
-		scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
-		scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent( startEvent );
+		scope.domElement.addEventListener('mousemove', onMouseMove, false);
+		scope.domElement.addEventListener('mouseup', onMouseUp, false);
+		scope.dispatchEvent(startEvent);
 	}
 
-	function onMouseMove( event ) {
-		
-		if ( scope.enabled === false ) return;
+	function onMouseMove(event) {
+
+		if (scope.enabled === false)
+			return;
 
 		event.preventDefault();
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-		if ( state === STATE.ROTATE ) {
-			
-			rotateEnd.set( event.clientX, event.clientY );
-			rotateDelta.subVectors( rotateEnd, rotateStart );
+		if (state === STATE.ROTATE) {
+
+			rotateEnd.set(event.clientX, event.clientY);
+			rotateDelta.subVectors(rotateEnd, rotateStart);
 
 			// rotating across whole screen goes 360 degrees around
-			scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
+			scope.rotateLeft(2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed);
 
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
-			scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+			scope.rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed);
 
-			rotateStart.copy( rotateEnd );
+			rotateStart.copy(rotateEnd);
 
-		} else if ( state === STATE.PAN ) {
-			
-			panEnd.set( event.clientX, event.clientY );
-			panDelta.subVectors( panEnd, panStart );
+		} else if (state === STATE.PAN) {
+
+			panEnd.set(event.clientX, event.clientY);
+			panDelta.subVectors(panEnd, panStart);
 			panDelta.multiplyScalar(-scope.moveSpeed);
-			
-			scope.pan( panDelta.x, panDelta.y );
 
-			panStart.copy( panEnd );
+			scope.pan(panDelta.x, panDelta.y);
+
+			panStart.copy(panEnd);
 		}
 	}
 
 	function onMouseUp() {
-		if ( scope.enabled === false ) return;
+		if (scope.enabled === false)
+			return;
 
-		scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
-		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent( endEvent );
+		scope.domElement.removeEventListener('mousemove', onMouseMove, false);
+		scope.domElement.removeEventListener('mouseup', onMouseUp, false);
+		scope.dispatchEvent(endEvent);
 		state = STATE.NONE;
 
 	}
 
 	function onMouseWheel(event) {
-		if ( scope.enabled === false || scope.noZoom === true ) return;
+		if (scope.enabled === false || scope.noZoom === true)
+			return;
 
 		event.preventDefault();
 
-		var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
+		var direction = (event.detail < 0 || event.wheelDelta > 0) ? 1 : -1;
 		scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
 
 		scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
 
-		scope.dispatchEvent( startEvent );
-		scope.dispatchEvent( endEvent );
+		scope.dispatchEvent(startEvent);
+		scope.dispatchEvent(endEvent);
 	}
 
-	function onKeyDown( event ) {
-		if ( scope.enabled === false) return;
-		
-		switch ( event.keyCode ) {
-		case scope.keys.UP: 	scope.moveForward = true; break;
-		case scope.keys.BOTTOM: scope.moveBackward = true; break;
-		case scope.keys.LEFT: 	scope.moveLeft = true; break;
-		case scope.keys.RIGHT: 	scope.moveRight = true; break;
-		case scope.keys.W: 	scope.moveForward = true; break;
-		case scope.keys.S:	scope.moveBackward = true; break;
-		case scope.keys.A:	scope.moveLeft = true; break;
-		case scope.keys.D:	scope.moveRight = true; break;			
-		case scope.keys.R: 	scope.moveUp = true; break;	
-		case scope.keys.F: 	scope.moveDown = true; break;	
-		case scope.keys.Z: 	scope.isRollLeft = true; break;	
-		case scope.keys.C: 	scope.isRollRight = true; break;	
-		case scope.keys.Q: 	scope.isTurnLeft = true; break;	
-		case scope.keys.E: 	scope.isTurnRight = true; break;
-                case scope.keys.T:      scope.isRollUp = true; break;
-                case scope.keys.G:      scope.isRollDown = true; break;
+	function onKeyDown(event) {
+		if (scope.enabled === false)
+			return;
+
+		switch (event.keyCode) {
+		case scope.keys.UP:
+			scope.moveForward = true;
+			break;
+		case scope.keys.BOTTOM:
+			scope.moveBackward = true;
+			break;
+		case scope.keys.LEFT:
+			scope.moveLeft = true;
+			break;
+		case scope.keys.RIGHT:
+			scope.moveRight = true;
+			break;
+		case scope.keys.W:
+			scope.moveForward = true;
+			break;
+		case scope.keys.S:
+			scope.moveBackward = true;
+			break;
+		case scope.keys.A:
+			scope.moveLeft = true;
+			break;
+		case scope.keys.D:
+			scope.moveRight = true;
+			break;
+		case scope.keys.R:
+			scope.moveUp = true;
+			break;
+		case scope.keys.F:
+			scope.moveDown = true;
+			break;
+		case scope.keys.Z:
+			scope.isRollLeft = true;
+			break;
+		case scope.keys.C:
+			scope.isRollRight = true;
+			break;
+		case scope.keys.Q:
+			scope.isTurnLeft = true;
+			break;
+		case scope.keys.E:
+			scope.isTurnRight = true;
+			break;
+		case scope.keys.T:
+			scope.isRollUp = true;
+			break;
+		case scope.keys.G:
+			scope.isRollDown = true;
+			break;
 
 		}
 	}
-	
-	function onKeyUp( event ) {
-		switch ( event.keyCode ) {
-		case scope.keys.W: 	scope.moveForward = false; break;
-		case scope.keys.S: 	scope.moveBackward = false; break;
-		case scope.keys.A: 	scope.moveLeft = false; break;
-		case scope.keys.D: 	scope.moveRight = false; break;
-		case scope.keys.UP: 	scope.moveForward = false; break;
-		case scope.keys.BOTTOM: scope.moveBackward = false; break;
-		case scope.keys.LEFT: 	scope.moveLeft = false; break;
-		case scope.keys.RIGHT: 	scope.moveRight = false; break;
-		case scope.keys.R: 	scope.moveUp = false; break;	
-		case scope.keys.F: 	scope.moveDown = false; break;	
-		case scope.keys.Z: 	scope.isRollLeft = false; break;	
-		case scope.keys.C: 	scope.isRollRight = false; break;	
-		case scope.keys.Q: 	scope.isTurnLeft = false; break;	
-		case scope.keys.E: 	scope.isTurnRight = false; break;
-		case scope.keys.T:	scope.isRollUp = false; break;
-		case scope.keys.G:	scope.isRollDown = false; break;
-		case scope.keys.L:	needsReset = true;break;
+
+	function onKeyUp(event) {
+		switch (event.keyCode) {
+		case scope.keys.W:
+			scope.moveForward = false;
+			break;
+		case scope.keys.S:
+			scope.moveBackward = false;
+			break;
+		case scope.keys.A:
+			scope.moveLeft = false;
+			break;
+		case scope.keys.D:
+			scope.moveRight = false;
+			break;
+		case scope.keys.UP:
+			scope.moveForward = false;
+			break;
+		case scope.keys.BOTTOM:
+			scope.moveBackward = false;
+			break;
+		case scope.keys.LEFT:
+			scope.moveLeft = false;
+			break;
+		case scope.keys.RIGHT:
+			scope.moveRight = false;
+			break;
+		case scope.keys.R:
+			scope.moveUp = false;
+			break;
+		case scope.keys.F:
+			scope.moveDown = false;
+			break;
+		case scope.keys.Z:
+			scope.isRollLeft = false;
+			break;
+		case scope.keys.C:
+			scope.isRollRight = false;
+			break;
+		case scope.keys.Q:
+			scope.isTurnLeft = false;
+			break;
+		case scope.keys.E:
+			scope.isTurnRight = false;
+			break;
+		case scope.keys.T:
+			scope.isRollUp = false;
+			break;
+		case scope.keys.G:
+			scope.isRollDown = false;
+			break;
+		case scope.keys.L:
+			needsReset = true;
+			break;
 		}
 	}
-	
-	
-	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
-	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
-	this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
 
-	window.addEventListener( 'keydown', onKeyDown, false );
-	window.addEventListener( 'keyup', onKeyUp, false );
+	this.domElement.addEventListener('contextmenu', function (event) {
+		event.preventDefault();
+	}, false);
+	this.domElement.addEventListener('mousedown', onMouseDown, false);
+	this.domElement.addEventListener('mousewheel', onMouseWheel, false);
+	this.domElement.addEventListener('DOMMouseScroll', onMouseWheel, false); // firefox
+
+	window.addEventListener('keydown', onKeyDown, false);
+	window.addEventListener('keyup', onKeyUp, false);
 
 };
 
-THREE.FirstPersonControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+THREE.FirstPersonControls.prototype = Object.create(THREE.EventDispatcher.prototype);

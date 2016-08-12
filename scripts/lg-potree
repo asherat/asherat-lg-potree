@@ -42,7 +42,7 @@ for lg in $LG_FRAMES ; do
 	    frame=$(( ${frame} - ${LG_FRAMES_MAX} ));
 	fi
 
-	CMD0="killall chromium-browser; export DISPLAY=:0 && chromium-browser '$peruse_IP':'$peruse_Port'/lg-potree/ --start-fullscreen";
+	CMD0="killall chromium-browser; export DISPLAY=:0 && chromium-browser --start-fullscreen '$peruse_IP':'$peruse_Port'/lg-potree/";
 	if [[ $frame -eq 0 ]]
 	then
 		CMD=$CMD0;

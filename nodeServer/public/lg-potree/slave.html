@@ -2,10 +2,10 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Potree Viewer</title>
+	<link rel="icon" type="image/png" href="resources/images/logo_black.png" />
 	<link rel="stylesheet" type="text/css" href="css/potree.css">
 </head>
 <body>
-
 	<script src="libs/three.js/build/three.js"></script>
 	<script src="libs/socket.io/socket.io.min.js"></script>
 	<script src="libs/lg-three.js"></script>
@@ -29,20 +29,8 @@
 	<div id="renderArea"></div>
 	<div id="sponsors"></div>
 	<script>
-		var sponsors;
-		var rotationAngle = 15;
 		var sceneProperties = {
-			path:			"resources/pointclouds/lion_takanawa/cloud.js",
-			cameraPosition: null,
-			cameraTarget: null,
-			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Interpolation", 	// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov: 			20, 				// field of view in degree
-			flipYZ:			true,
-			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit: 	1,					// max number of points in millions
-			pointSize: 		1.2,	
-			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
+			rotationAngle: 15,
 		};
 	
 	</script>
