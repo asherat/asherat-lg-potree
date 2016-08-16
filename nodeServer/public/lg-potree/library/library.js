@@ -23,11 +23,16 @@ CPManager.on( 'CPDir', function( data ) {
 	// Add the photo, name and link to every Point Cloud Data
 	// If no photo is found, it gets the default logo_black via "this.onerror" function
 	for (i = 0; i < data.length; i++) { 
-		var newMsgContent = '<li><img src="../resources/pointclouds/' + data[i] + '/preview.png"' +
-		'onerror="this.onerror=null;this.src=\'../resources/images/logo_black.png\';" ' +
-		'onclick="sendMessageToServer(\'' + data[i] + '\')" />' +
-		'<h3>'+ data[i] +'</h3></li>';
-
+		var newMsgContent =
+		'<li>' +
+			'<div id="pc" ' +
+				'onclick="sendMessageToServer(\'' + data[i] + '\')" >' +
+				'<img class="gallery" src="../resources/pointclouds/' + data[i] + '/preview.png"' +
+				'onerror="this.onerror=null;this.src=\'../resources/images/logo_black.png\';" ' +
+				' />' +
+				'<h3>' + data[i] + '</h3>' +
+			'</div>' +
+		'</li>';
 		content = content + newMsgContent; 
 
 	}

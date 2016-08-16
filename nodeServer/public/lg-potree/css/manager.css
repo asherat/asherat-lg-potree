@@ -77,15 +77,7 @@ nav ul li a:hover {
 	background-color : #fdcc9b
 }
 
-#cpfiles img{
-	height: 200px;
-	width: auto;
-	vertical-align: middle;
-}
 
-#cpfiles div img{
-	height: 30px;
-}
 
 #cpfiles ul{
 	margin: 0;
@@ -100,11 +92,21 @@ nav ul li a:hover {
 	cursor: hand;
 }
 
-#cpfiles img:hover + h3 , h3:hover {
+#pc img{
+	height: 200px;
+	width: auto;
+	vertical-align: middle;
+}
+
+#buttons img{
+	height: 30px;
+}
+
+#pc:hover * {
 	color: #1111ff;
 }
 
-#cpfiles h3{
+#pc h3{
 	text-align: center;
 }
 

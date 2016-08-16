@@ -97,8 +97,8 @@ module.exports.main = function () {
 					fs.renameSync(oldPath, newPath);
 					res.status(200).send();
 				} catch (e) {
-					console.log("ERROR: Tried to rename " + oldPath + " to " + newPath + " : " + err);
-					res.status(500).send(err);
+					console.log("ERROR: Tried to rename " + oldPath + " to " + newPath + " : " + e);
+					res.status(500).send(e);
 				}
 			}
 		}

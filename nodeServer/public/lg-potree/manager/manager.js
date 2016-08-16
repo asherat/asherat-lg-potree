@@ -24,16 +24,18 @@ CPManager.on('CPDir', function (data) {
 	// It also adds the Add, Edit and Delete Buttons
 	for (i = 0; i < data.length; i++) {
 		var newMsgContent =
-			'<li ' +
-			'onclick="sendMessageToServer(\'' + data[i] + '\')" >' +
-			'<img class="gallery" src="../resources/pointclouds/' + data[i] + '/preview.png"' +
-			'onerror="this.onerror=null;this.src=\'../resources/images/logo_black.png\';" ' +
-			' />' +
-			'<h3>' + data[i] + '</h3>' +
-			'<div class="buttons">' +
-			'<img id="edit-pc" src="../resources/images/edit.png" onclick="editPC(\'' + data[i] + '\')" />' +
-			'<img id="delete-pc" src="../resources/images/delete.png" onclick="deletePC(\'' + data[i] + '\')" />' +
-			'</div>' +
+			'<li>' +
+				'<div id="pc" ' +
+					'onclick="sendMessageToServer(\'' + data[i] + '\')" >' +
+					'<img class="gallery" src="../resources/pointclouds/' + data[i] + '/preview.png"' +
+					'onerror="this.onerror=null;this.src=\'../resources/images/logo_black.png\';" ' +
+					' />' +
+					'<h3>' + data[i] + '</h3>' +
+				'</div>' +
+				'<div id="buttons">' +
+					'<img id="edit-pc" src="../resources/images/edit.png" onclick="editPC(\'' + data[i] + '\')" />' +
+					'<img id="delete-pc" src="../resources/images/delete.png" onclick="deletePC(\'' + data[i] + '\')" />' +
+				'</div>' +
 			'</li>';
 
 		content = content + newMsgContent;
@@ -75,16 +77,15 @@ $(document).ready(function () {
 });
 
 function deletePC(name) {
-	console.log("HOLA")
 	$('#origName3')[0].value = name;
-	var val = $(event.target).parent().siblings('.gallery');
+	var val = $(event.target).parent().siblings('#pc').find('.gallery');
 	$('#preview3').attr('src', val.attr('src'));
 }
 
 function editPC(name) {
 	$('#origName')[0].value = name;
 	$('#dirName2')[0].value = name;
-	var val = $(event.target).parent().siblings('.gallery');
+	var val = $(event.target).parent().siblings('#pc').find('.gallery');
 	$('#preview2').attr('src', val.attr('src'));
 }
 
@@ -92,7 +93,7 @@ $(function () {
 	var dialog,
 	form,
 
-	dirRegex = /^[^\\/: *  ?  <  >  | ] + $ / ,
+	dirRegex = new RegExp('^[^\\\\\/\?\%\*\:\|\"<>]+$'),
 	zipfile = $("#zipfile"),
 	dirName = $("#dirName"),
 	img = $("#img"),
@@ -119,15 +120,15 @@ $(function () {
 		}
 	}
 
-	function checkRegexp(o, regexp, n) {
-		if (!(regexp.test(o.val()))) {
-			o.addClass("ui-state-error");
-			updateTips(n);
-			return false;
-		} else {
-			return true;
-		}
-	}
+    function checkRegexp( o, regexp, n ) {
+        if ( !(regexp.test( o.val() ) ) ) {
+            o.addClass( "ui-state-error" );
+            updateTips( n );
+            return false;
+        } else {
+            return true;
+        }
+    }
 
 	function checkExt(sName, sExt, n) {
 		if (sName != "" && sName.substr(sName.length - sExt.length, sExt.length).toLowerCase() == sExt.toLowerCase()) {
@@ -161,8 +162,8 @@ $(function () {
 		allFields.removeClass("ui-state-error");
 
 		valid = valid && checkExt(zipfile.val(), '.zip', "Data must be a .zip file");
-		valid = valid && checkLength(dirName, "Point Cloud Data", 3, 25);
-		valid = valid && checkRegexp(dirName, dirRegex, "Invaled name");
+		valid = valid && checkLength(dirName, "Point Cloud Data", 3, 20);
+		valid = valid && checkRegexp(dirName, dirRegex, "Invalid name");
 		valid = valid && checkExt(img.val(), '.png', "Image must be a .png file");
 
 		if (valid) {
@@ -220,7 +221,6 @@ $(function () {
 		valid = valid && (img2.val() == "" || checkExt(img2.val(), '.png', "Image must be a .png file"));
 
 		if (valid) {
-
 			var formData = new FormData($('form#editPC')[0]);
 			sendForm(formData, '/update');
 		}
@@ -235,21 +235,7 @@ $(function () {
 				$("#dialog").dialog("open");
 			});
 		});
-		// Validating Form Fields.....
-		$("#submit").click(function (e) {
-			var email = $("#email").val();
-			var name = $("#name").val();
-			var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
-			if (email === '' || name === '') {
-				alert("Please fill all fields...!!!!!!");
-				e.preventDefault();
-			} else if (!(email).match(emailReg)) {
-				alert("Invalid Email...!!!!!!");
-				e.preventDefault();
-			} else {
-				alert("Form Submitted Successfully......");
-			}
-		});
+
 	});
 	dialog2 = $("#dialog-form2").dialog({
 			autoOpen : false,
@@ -288,11 +274,6 @@ $(function () {
 	function deletePC() {
 		var formData = new FormData($('form#deletePC')[0]);
 		sendForm(formData, '/delete');
-		/*console.log("Deleted Point Cloud Data", origName3.val());
-		form3[0].submit();
-		dialog3.dialog( "close" );
-		window.location.reload();*/
-
 		return true;
 	}
 
