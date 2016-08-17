@@ -154,7 +154,7 @@ $(function () {
 		}).done(function () {
 			window.location.reload();
 		}).error(function (e) {
-			console.log("ERROR:", e);
+			console.error("ERROR:", e);
 		});
 	}
 	function addPC() {
