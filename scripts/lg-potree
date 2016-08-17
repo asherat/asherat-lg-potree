@@ -27,7 +27,7 @@ killall node nodejs spacenav-emitter;
 
 echo "Opening lg-potree on $peruse_IP":"$peruse_Port"
 ${HOME}/asherat666-peruse-a-rue/bin/peruse-a-rue &
-${HOME}/asherat666-peruse-a-rue/bin/spacenav-emitter 127.0.0.1 $peruse_Port &
+${HOME}/asherat666-peruse-a-rue/bin/spacenav-emitter $device_id 127.0.0.1 $peruse_Port &
 
 
 #Run chromiums
