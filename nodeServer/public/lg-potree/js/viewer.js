@@ -32,7 +32,7 @@ CPManager.on('updateArgs', function (data) {
 	pSizeType.setValue(data.sSizeType);
 	pMaterial.setValue(data.sMaterial);
 	pQuality.setValue(data.quality);
-	if (pEDL !== undefined)
+	if (typeof pEDL != 'undefined')
 		pEDL.setValue(data.EDL);
 	pFlipYZ.setValue(data.flipYZ);
 	pSkybox.setValue(data.skybox);
@@ -237,10 +237,6 @@ var preRenderMaster = function () {
 		lastChangeArgs.rotation = changeArgs.rotation;
 	}
 
-	if (changeArgs.skipSlaveRender === undefined) {
-		CPManager.emit('masterArgs', "ALGO");
-	}
-
 	return changeArgs;
 };
 
@@ -268,7 +264,7 @@ var preRenderSlave = function (a) {
 	camera.rotateOnAxis((new THREE.Vector3(0, -1, 0)), yawOffset * rotationAngle * Math.PI / 180);
 
 	// Slaves update variables sent by the master
-	if (pointcloud !== undefined) {
+	if (typeof pointcloud != 'undefined') {
 		pointCountTarget = a.points;
 		pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 
