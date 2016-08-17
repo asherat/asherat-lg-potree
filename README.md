@@ -8,3 +8,5 @@ Point Cloud Visualization Tool https://github.com/LiquidGalaxyLAB/asherat666-lg-
 
 Please check the [Wiki](https://github.com/asherat/asherat666-lg-potree/wiki) first.
 
+You can see a video description of the project here https://www.youtube.com/watch?v=9ZY0EPQrgQ4
+
