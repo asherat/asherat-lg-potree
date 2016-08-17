@@ -23,7 +23,7 @@ remote_user=$4
 
 device_id='/dev/input/spacenavigator'
 
-killall node nodejs spacenav-emitter;
+killall -q node nodejs spacenav-emitter;
 
 echo "Opening lg-potree on $peruse_IP":"$peruse_Port"
 ${HOME}/asherat666-peruse-a-rue/bin/peruse-a-rue &
