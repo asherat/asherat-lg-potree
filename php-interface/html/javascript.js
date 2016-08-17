@@ -60,7 +60,6 @@ function initPeruse() {
   var lgIP = document.getElementById('lgIP').value;
   var nodeIP = document.getElementById('nodeIP').value;
   var nodePort = document.getElementById('nodePort').value;
-console.log("VARS", lgIP, nodeIP, nodePort);
   submitRequest('change.php?initPeruse=' + lgIP + '&nodeIP='+ nodeIP + '&nodePort=' + nodePort);
   showAndHideStatus();
 }
