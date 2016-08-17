@@ -20,12 +20,12 @@ function sendCmd($IP, $CMD, $msg, $user="lg"){
 	if(ssh2_auth_pubkey_file($connection, $user,
 			'/opt/www-files/id_rsa.pub',
 			'/opt/www-files/id_rsa')){
-		//echo $msg;
+		echo $msg;
 		$stream = ssh2_exec($connection, $CMD);
 		stream_set_blocking($stream, true);
 		$stream_out = ssh2_fetch_stream($stream, SSH2_STREAM_STDIO);
 		$ret_cmd = stream_get_contents($stream_out);
-		echo $ret_cmd; //DEBUG
+		//echo $ret_cmd; //DEBUG
 	}else
 		echo "Authentication Failed";
 
