@@ -17,17 +17,20 @@ $node_path = "/home/lg";
 function sendCmd($IP, $CMD, $msg, $user="lg"){
 
 	$connection = ssh2_connect($IP, 22, array('hostkey'=>'ssh-rsa'));
-	if(ssh2_auth_pubkey_file($connection, $user,
-			'/opt/www-files/id_rsa.pub',
-			'/opt/www-files/id_rsa')){
-		echo $msg;
-		$stream = ssh2_exec($connection, $CMD);
-		stream_set_blocking($stream, true);
-		$stream_out = ssh2_fetch_stream($stream, SSH2_STREAM_STDIO);
-		$ret_cmd = stream_get_contents($stream_out);
-		//echo $ret_cmd; //DEBUG
+	if($connection){
+		if(ssh2_auth_pubkey_file($connection, $user,
+				'/opt/www-files/id_rsa.pub',
+				'/opt/www-files/id_rsa')){
+			echo $msg;
+			$stream = ssh2_exec($connection, $CMD);
+			stream_set_blocking($stream, true);
+			$stream_out = ssh2_fetch_stream($stream, SSH2_STREAM_STDIO);
+			$ret_cmd = stream_get_contents($stream_out);
+			//echo $ret_cmd; //DEBUG
+		}else
+			echo "Authentication Failed";
 	}else
-		echo "Authentication Failed";
+		echo "Couldn't connect";
 
 }
 
