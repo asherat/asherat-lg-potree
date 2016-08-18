@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if [ $# -ne 4 ] ; then
+        echo "USAGE: $0 [LG IP] [Peruse IP] [Peruse Port] [LG User]"
+        exit 2
+fi
+
 
 remote_IP=$1
 peruse_IP=$2
