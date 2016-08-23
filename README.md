@@ -10,3 +10,4 @@ Please check the [Wiki](https://github.com/asherat/asherat666-lg-potree/wiki) fi
 
 You can see a video description of the project here https://www.youtube.com/watch?v=9ZY0EPQrgQ4
 
+The work log of this project is in http://goo.gl/0VldTV
