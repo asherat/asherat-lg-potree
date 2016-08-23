@@ -27,6 +27,7 @@
 #include <linux/limits.h>
 #include <linux/input.h>
 #include <signal.h>
+#include <arpa/inet.h>
 
 #define PORT_MIN 0
 #define PORT_MAX 65535
